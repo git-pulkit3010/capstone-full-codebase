@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ConsentBuddy</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <h1>ConsentBuddy</h1>
+
+  <!-- Categories Checkboxes -->
+  <div id="categoryContainer">
+    <form>
+      <label><input type="checkbox" id="summarizeWholePage"> Summarize Whole Page</label><br>
+      <label title="Summarizes the entire webpage for you.">
+        <input type="checkbox" id="piCollection"> Personal Information Collection
+      </label><br>
+      <label title="Summarizes how personal information is handled on the site.">
+        <input type="checkbox" id="piHandling"> Personal Information Handling
+      </label><br>
+      <label title="Summarizes how personal data is stored on the website.">
+        <input type="checkbox" id="piStorage"> Personal Information Storage
+      </label><br>
+      <label title="Summarizes how personal information is shared with third parties.">
+        <input type="checkbox" id="piSharing"> Personal Information Sharing
+      </label><br>
+      <label title="Summarizes the website's data confidentiality and security practices.">
+        <input type="checkbox" id="dataConfidentiality"> Data Confidentiality & Security
+      </label><br>
+      <label title="Summarizes the data breach notification practices.">
+        <input type="checkbox" id="breachNotice"> Data Breach Notification
+      </label><br>
+      <label title="Ask a custom privacy-related question.">
+        <input type="checkbox" id="customInquiry"> Custom Inquiry
+      </label>
+      <div id="customTextContainer" style="display:none; margin-top:10px;">
+        <input type="text" id="customTextInput" placeholder="e.g. How will this page use my data?" style="width: 100%; padding: 8px;"/>
+      </div>      
+    </form>
+    <button id="summarizeButton">Summarize Selected Categories</button>
+  </div>
+
+  <!-- Summarization Results and Progress -->
+  <div id="summaryContainer" style="display: none;">
+    <div id="summarizationMessage">
+      <div id="loadingText">Summarizing in progress...</div>
+      <div id="loadingBarContainer">
+        <div id="loadingBar"></div>
+      </div>
+      <div id="progressPercentLabel">
+        <span id="progressPercent">0%</span>
+      </div>
+    </div>    
+    <div id="summarizedTextContainer"></div>
+    <button id="readButton" style="display: none;">Read Summary</button>
+    <button id="restartButton" style="display: none;">Restart</button>
+    <button id="backButton" style="display: none;">Back</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

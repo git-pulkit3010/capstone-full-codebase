@@ -1,0 +1,25 @@
+{
+  "name": "cs30-2-2025-s1-codes-for-openai",
+  "version": "1.0.0",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.sydney.edu.au/jpas0921/CS30-2-2025-S1.git"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mysql2": "^3.14.0"
+  },
+  "description": ""
+}
+
+

@@ -1,175 +1,129 @@
 body {
-  font-family: Arial, sans-serif;
-  width: 600px; /* Wider frame */
-  padding: 15px;
-  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
+  background-color: #121212;
+  color: #f0f0f0;
+  margin: 0;
+  padding: 20px;
+  width: 360px;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+html {
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: #121212;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 h1 {
-  font-size: 20px;
-  margin-bottom: 20px;
   text-align: center;
+  color: #a78bfa;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-/* Hide summary container until summarization starts */
-#summaryContainer {
-  display: none;
+.card {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.card label {
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+}
+
+.card label span {
+  line-height: 1.5;
+}
+
+input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: #a78bfa;
+}
+
+#customTextInput {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  background-color: #2a2a2a;
+  border: 1px solid #555;
+  color: #f0f0f0;
+  border-radius: 6px;
+  font-size: 15px;
 }
 
 button {
-  width: 100%;
-  padding: 10px;
-  background-color: #4CAF50;
+  background-color: #a78bfa;
   color: white;
   border: none;
-  font-size: 14px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 10px;
   cursor: pointer;
-  border-radius: 5px;
+  width: 100%;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  margin-top: 18px;
+  margin-bottom: 22px;
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: #8b6fe7;
+  transform: translateY(-1px);
 }
 
 #loadingBarContainer {
-  display: none; /* Start hidden */
-  width: 100%;
-  background-color: #ddd;
-  border-radius: 4px;
-  margin-top: 10px;
+  background-color: #333;
   height: 10px;
-  overflow: hidden;
-  position: relative;
+  width: 100%;
+  border-radius: 4px;
+  margin: 10px 0;
+  display: none;
 }
 
 #loadingBar {
+  background-color: #a78bfa;
   height: 100%;
   width: 0%;
-  background-color: #4CAF50;
-  transition: width 0.5s ease-in-out;
-}
-
-@keyframes loadingProgress {
-  0% { width: 0%; }
-  50% { width: 100%; }
-  100% { width: 0%; }
+  transition: width 0.5s ease;
 }
 
 #progressPercentLabel {
-  margin-top: 5px;
+  text-align: right;
   font-size: 14px;
   font-weight: bold;
-  text-align: right;
-  color: #4CAF50;
+  color: #a78bfa;
 }
 
 #summarizedTextContainer {
-  padding: 15px;
-  white-space: pre-line;
-  word-wrap: break-word;
-  font-size: 14px;
-  line-height: 1.5;
-  background-color: #fefefe;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  max-width: 100%;
-  overflow-x: auto;
-}
-
-#summarizationMessage {
-  font-size: 15px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-#backButton {
-  margin-top: 20px;
-  background-color: #4CAF50;
-  color: white;
-}
-
-#backButton:hover {
-  background-color: #45a049;
-}
-
-#categoryContainer {
-  margin-bottom: 20px;
-}
-
-#summarizeButton {
-  margin-top: 20px;
-  padding: 10px;
-  background-color: #4CAF50;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 5px;
-  display: block;
-  width: 100%;
-}
-
-#summarizeButton:hover {
-  background-color: #45a049;
-}
-
-.expandButton {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  font-size: 13px;
-  cursor: pointer;
-  margin-top: 10px;
-  border-radius: 4px;
-}
-
-.expandButton:hover {
-  background-color: #45a049;
-}
-
-.fullSummary {
-  margin-top: 10px;
   padding: 12px;
-  background-color: #f4f4f4;
-  border-radius: 5px;
-  font-size: 14px;
-  white-space: pre-wrap;
-  max-width: 100%;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+  background-color: #222;
+  border-radius: 8px;
+  border: 1px solid #444;
+  white-space: pre-line;
+  font-size: 15px;
+  line-height: 1.6;
 }
-
-#readButton {
-  margin-top: 20px;
-  background-color: #2196F3; /* Blue color for read button */
-  color: white;
-}
-
-#readButton:hover {
-  background-color: #1976D2;
-}
-
-#restartButton {
-  display: none;
-  margin-top: 10px;
-  background-color: #FF9800;
-  color: white;
-}
-
-#restartButton:hover {
-  background-color: #E68900;
-}
-
 
 .duration {
-  font-size: 16px;
-  font-weight: bold;
-  color: #4CAF50;  /* Green color for consistency with other buttons */
-  margin-top: 20px;
-  padding: 10px;
-  background-color: #f9f9f9;  /* Light background for contrast */
-  border-radius: 5px;
-  border: 1px solid #ddd;  /* Subtle border for a cleaner look */
-  text-align: center;  /* Center align the duration */
+  margin-top: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #8ff08f;
 }
-

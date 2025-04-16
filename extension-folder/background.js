@@ -67,21 +67,96 @@ async function storeSummary(textHash, category, summary) {
 }
 
 const prompts = {
-  summarizeWholePage: `Please summarize the following terms and conditions in plain English, focusing on all key areas: personal data collection, sharing, user rights, and security. Structure the output into three paragraphs (total ~400 words):\nParagraph 1: Main takeaway.\nParagraph 2: Details.\nParagraph 3: Conclusion.\nText:\n`,
+  piSharing: `You are a privacy assistant. Please read and analyze the following terms and conditions. Summarize the sections related to how personal information is shared with third parties. Focus on who the data is shared with, under what circumstances, and for what purposes.
+Structure your output using the following section titles. Do not use bullet points or markdown formatting.
+**Key Takeaways**  
+Summarize the main message users should understand about data sharing.
+**Detailed Explanation**  
+Explain who the data is shared with, when, and why, using plain language and examples from the terms.
+**Implications for Users**  
+Discuss what these sharing practices mean for users in terms of control and privacy.
+**Source References**  
+Clearly state which sections of the terms your summary is based on. Include quoted headers or phrases like “Section 3: Information Sharing Practices” to help users trace the origin.
+Text:
+`,
 
-  piCollection: `Please summarize how personal information is collected. Highlight types of data collected, how, and for what purposes. Structure in 3 paragraphs (400 words): Key takeaway, detailed summary, conclusion.\nText:\n`,
+  piCollection: `You are a privacy assistant. Please summarize how personal information is collected based on the following terms and conditions. Include what types of data are collected, how they are collected, and why.
+Organize your summary into the following clearly labeled sections. Do not use bullet points or markdown syntax.
+**Key Takeaways**  
+What users need to know about the collection of their data.
+**How Information is Collected**  
+Provide details on collection methods (e.g., cookies, forms) and examples of data types gathered.
+**What This Means for the User**  
+Explain the significance of these practices for privacy, consent, and tracking.
+**Source References**  
+List specific sections or clauses that describe data collection, using quotes like “Cookies and Tracking Technologies.”
+Text:
+`,
 
-  piHandling: `Please summarize how personal data is handled internally, including processing, access, transfer, and anonymization. Structure in 3 paragraphs (400 words): Key takeaway, details, implications.\nText:\n`,
+  dataConfidentiality: `You are a privacy assistant. Please review and simplify the terms and conditions related to data confidentiality and security. Explain how user data is protected and whether the protections appear effective.
+Use the following section titles. Write in full paragraphs without bullet points or markdown formatting.
+**Security Overview**  
+Explain the core data protection practices mentioned.
+**Technologies and Safeguards Used**  
+Describe encryption, access controls, and other technologies in plain terms.
+**Reflections and Clarity**  
+Assess whether these measures seem sufficient and clearly communicated.
+**Source References**  
+Cite the section titles or clauses from the terms like “Security Measures” or “Your Data Protection.”
+Text:
+`,
 
-  piStorage: `Please summarize how personal data is stored, including location, duration, and protection. Structure in 3 paragraphs (400 words): Key takeaway, technical details, conclusion.\nText:\n`,
+  summarizeWholePage: `You are a privacy assistant. Please summarize the entire terms and conditions in plain English. Focus on the main themes: data collection, usage, sharing, storage, security, and user rights.
+Organize the summary into the following sections. Use paragraph format without markdown.
+**Overall Summary**  
+Capture the main purpose and scope of the document.
+**Key Policies Explained**  
+Go into more detail about data use, sharing, and user rights.
+**What Users Should Be Aware Of**  
+Discuss the overall impact of the policies on the user.
+**Source References**  
+Clearly mention which sections were summarized, using phrases like “Section 2: Data Collection” or “User Rights.”
+Text:
+`,
 
-  piSharing: `Please summarize how personal data is shared with third parties. Focus on who, why, and when. Structure in 3 paragraphs (400 words): Key takeaway, explanation, user considerations.\nText:\n`,
+  piHandling: `You are a privacy assistant. Please summarize how personal information is handled internally, including how it is accessed, processed, transferred, or anonymized.
+Divide your summary into four clearly titled sections. Use full paragraphs and avoid markdown.
+**Key Takeaways on Handling**  
+What users should understand about internal data handling practices.
+**Detailed Processing Practices**  
+Explain how the data is accessed and used internally, including transfers or transformations.
+**User Impact and Recommendations**  
+Describe what this means for user control, trust, and transparency.
+**References to Terms**  
+Name and quote the specific sections, like “Employee Access Policies” or “Internal Use of Data.”
+Text:
+`,
 
-  dataConfidentiality: `Please summarize how user data is protected, including encryption, access control, or third-party handling. Structure in 3 paragraphs (400 words): Key takeaway, methods, final evaluation.\nText:\n`,
+  piStorage: `You are a privacy assistant. Please summarize how personal data is stored, including where it is stored, for how long, and how it is protected.
+Structure your output into the following titled sections. Do not use markdown formatting or bullets.
+**Main Storage Practices**  
+Summarize where and how personal data is stored.
+**Storage Duration and Protections**  
+Explain how long data is kept, where, and under what security measures.
+**Implications for Privacy**  
+Discuss what these storage practices mean for user security and data retention.
+**Cited Sections from Terms**  
+Include direct references to clauses like “Storage and Retention Policy” or “Where We Store Your Data.”
+Text:
+`,
 
-  breachNotice: `Please summarize the breach notification policy. Include how, when, and what actions are taken. Structure in 3 paragraphs (400 words): Key takeaway, explanation, user consideration.\nText:\n`, 
-
-  custom: ''
+  breachNotice: `You are a privacy assistant. Please summarize the breach notification policy from the terms and conditions. Explain how users are informed, the timelines, and mitigation efforts.
+Write the response in the following four sections. Use plain English paragraphs with no numbered headings or markdown formatting.
+**Breach Notification Commitment**  
+Describe the company’s general approach to informing users of data breaches.
+**Timeline and Response Actions**  
+Explain how quickly the company commits to informing users and what steps are taken afterward.
+**User Considerations**  
+Discuss what users should expect or do if their data is affected.
+**Referenced Sections in the Terms**  
+List the section titles or clauses like “Breach Notification Policy” or “Section 9” that explain these responsibilities.
+Text:
+`
 };
 
 async function summarizeWithOpenAI(prompt, text, category, callback) {

@@ -66,6 +66,7 @@ async function storeSummary(textHash, category, summary) {
   }
 }
 
+
 const prompts = {
   piSharing: `You are a privacy assistant. Please read and analyze the following terms and conditions. Summarize the sections related to how personal information is shared with third parties. Focus on who the data is shared with, under what circumstances, and for what purposes.
 Structure your output using the following section titles. Do not use bullet points or markdown formatting.
@@ -156,83 +157,126 @@ Discuss what users should expect or do if their data is affected.
 **Referenced Sections in the Terms**  
 List the section titles or clauses like “Breach Notification Policy” or “Section 9” that explain these responsibilities.
 Text:
-`
+`,
+
+custom:''
 };
 
-async function summarizeWithOpenAI(prompt, text, category, callback) {
+// async function summarizeWithOpenAI(prompt, text, category, callback) {
+//   try {
+//     let actualText = text;
+
+//     // ✅ If it's a PDF URL, fetch and extract the text first
+//     if (text.startsWith('__PDF_URL__:')) {
+//       const pdfUrl = text.replace('__PDF_URL__:', '');
+//       console.log('📄 PDF detected. Extracting text from:', pdfUrl);
+
+//       const extractRes = await fetch('http://localhost:5001/extract-pdf-text', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ url: pdfUrl })
+//       });
+
+//       const extractData = await extractRes.json();
+//       if (!extractData.text) {
+//         throw new Error('No text extracted from PDF.');
+//       }
+
+//       actualText = extractData.text.slice(0, 10000); // limit length for token safety
+//       prompt = prompts[category] + actualText; // rebuild prompt for LLM
+//     }
+
+//     const textHash = await generateHash(actualText);
+
+//     const readableCategory = categoryLabels[category] || category;
+//     const cachedSummary = await getCachedSummary(textHash, readableCategory);
+
+//     if (cachedSummary) {
+//       console.log(`📦 LOADED FROM CACHE → Category: ${readableCategory}`);
+//       callback(cachedSummary, true);
+//       return;
+//     }
+
+//     if (!openaiApiKey || openaiApiKey === 'YOUR_API_KEY') {
+//       callback('API key is not set.');
+//       return;
+//     }
+
+//     const response = await fetch('https://api.openai.com/v1/chat/completions', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Authorization': `Bearer ${openaiApiKey}`,
+//       },
+//       body: JSON.stringify({
+//         model: 'gpt-3.5-turbo',
+//         messages: [
+//           { role: 'system', content: 'You are a privacy assistant.' },
+//           { role: 'user', content: prompt }
+//         ],
+//         max_tokens: 2048,
+//         temperature: 0.7
+//       })
+//     });
+
+//     if (!response.ok) {
+//       throw new Error(`OpenAI API error: ${response.status}`);
+//     }
+
+//     const json = await response.json();
+//     const content = json.choices?.[0]?.message?.content?.trim() || 'No summary returned.';
+
+//     if (content && !content.includes('Error')) {
+//       await storeSummary(textHash, readableCategory, content);
+//     }
+
+//     callback(content, false);
+//   } catch (err) {
+//     console.error('Summarization error:', err);
+//     callback('Error during summarization: ' + err.message);
+//   }
+// }
+
+async function summarizeWithMCP(prompt, text, category, callback) {
   try {
-    let actualText = text;
+    const isPDF = text.startsWith('__PDF_URL__:');
+    const payload = {
+      task: 'summarize',
+      category,
+      content: text,
+      prompt,
+      customPrompt: category === 'custom' ? prompt : ''
+    };
 
-    // ✅ If it's a PDF URL, fetch and extract the text first
-    if (text.startsWith('__PDF_URL__:')) {
-      const pdfUrl = text.replace('__PDF_URL__:', '');
-      console.log('📄 PDF detected. Extracting text from:', pdfUrl);
-
-      const extractRes = await fetch('http://localhost:5001/extract-pdf-text', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: pdfUrl })
-      });
-
-      const extractData = await extractRes.json();
-      if (!extractData.text) {
-        throw new Error('No text extracted from PDF.');
-      }
-
-      actualText = extractData.text.slice(0, 10000); // limit length for token safety
-      prompt = prompts[category] + actualText; // rebuild prompt for LLM
-    }
-
-    const textHash = await generateHash(actualText);
-
-    const readableCategory = categoryLabels[category] || category;
-    const cachedSummary = await getCachedSummary(textHash, readableCategory);
-
-    if (cachedSummary) {
-      console.log(`📦 LOADED FROM CACHE → Category: ${readableCategory}`);
-      callback(cachedSummary, true);
-      return;
-    }
-
-    if (!openaiApiKey || openaiApiKey === 'YOUR_API_KEY') {
-      callback('API key is not set.');
-      return;
-    }
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('http://localhost:5001/mcp', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: 'You are a privacy assistant.' },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 2048,
-        temperature: 0.7
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error);
     }
 
-    const json = await response.json();
-    const content = json.choices?.[0]?.message?.content?.trim() || 'No summary returned.';
+    const existing = await getCachedSummary(data.textHash, category);
+if (existing) {
+  console.log(`📦 Skipping store — already exists for ${category}`);
+  callback(existing, true);
+  return;
+}
 
-    if (content && !content.includes('Error')) {
-      await storeSummary(textHash, readableCategory, content);
-    }
-
-    callback(content, false);
+    await storeSummary(data.textHash, category, data.summary);
+    callback(data.summary, false);
   } catch (err) {
-    console.error('Summarization error:', err);
+    console.error('MCP Summarization Error:', err);
     callback('Error during summarization: ' + err.message);
   }
 }
+
+
+
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -248,7 +292,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     // Whole page summary shortcut
     if (selected.includes('summarizeWholePage')) {
-      summarizeWithOpenAI(
+      summarizeWithMCP(
         prompts.summarizeWholePage + text, 
         text, 
         'summarizeWholePage', 
@@ -267,7 +311,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const prompt = category === 'custom'
       ? message.customPrompt + '\n\nText:\n' + text
       : prompts[category] + text;
-      summarizeWithOpenAI(prompt, text, category, (summary) => {
+      summarizeWithMCP(prompt, text, category, (summary) => {
         summaries[category] = summary;
         completed++;
         if (completed === selected.length) {

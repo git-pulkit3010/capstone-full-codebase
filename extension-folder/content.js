@@ -96,4 +96,3 @@ function extractText(categories) {
 
   return sections.join('\n').slice(0, 12000); // prevent overload
 }
-

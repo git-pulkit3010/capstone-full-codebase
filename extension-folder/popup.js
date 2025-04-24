@@ -8,15 +8,14 @@ const categoryLabels = {
   breachNotice: 'Data Breach Notification'
 };
 
+
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
+  // UI Elements
   const summarizeButton = document.getElementById('summarizeButton');
   const backButton = document.getElementById('backButton');
-  const categories = Object.fromEntries(
-    Object.keys(categoryLabels).map(k => [k, document.getElementById(k)])
-  );
-
-  // const summarizeButton = document.getElementById('summarizeButton');
-  // const backButton = document.getElementById('backButton');
   const readButton = document.getElementById('readButton');
   const restartButton = document.getElementById('restartButton');
   const container = document.getElementById('categoryContainer');
@@ -25,64 +24,146 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadingBarContainer = document.getElementById('loadingBarContainer');
   const progressPercent = document.getElementById('progressPercent');
   const outputBox = document.getElementById('summarizedTextContainer');
-  const statusMsg = document.getElementById('loadingText');
   const customCheckbox = document.getElementById('customInquiry');
   const customTextInput = document.getElementById('customTextInput');
   const customTextContainer = document.getElementById('customTextContainer');
 
-  if (customCheckbox) {
-    customCheckbox.addEventListener('change', () => {
-      customTextContainer.style.display = customCheckbox.checked ? 'block' : 'none';
+  const categories = Object.fromEntries(
+    Object.keys(categoryLabels).map(k => [k, document.getElementById(k)])
+  );
+
+  const themeToggle = document.getElementById('themeToggle');
+
+// Apply saved theme on load
+if (localStorage.getItem('theme') === 'light') {
+  document.body.classList.add('light-mode');
+  themeToggle.checked = true;
+}
+
+// Toggle theme on switch
+themeToggle.addEventListener('change', () => {
+  if (themeToggle.checked) {
+    document.body.classList.add('light-mode');
+    localStorage.setItem('theme', 'light');
+  } else {
+    document.body.classList.remove('light-mode');
+    localStorage.setItem('theme', 'dark');
+  }
+});
+
+
+  // function enforceExclusiveSelection() {
+  //   const wholePageChecked = categories.summarizeWholePage.checked;
+  //   const customChecked = customCheckbox?.checked;
+  
+  //   // Disable/enable all category checkboxes
+  //   Object.entries(categories).forEach(([key, el]) => {
+  //     if (
+  //       (wholePageChecked && key !== 'summarizeWholePage') ||
+  //       (customChecked && key !== 'customInquiry')
+  //     ) {
+  //       el.disabled = true;
+  //     } else {
+  //       el.disabled = false;
+  //     }
+  //   });
+  
+  //   // Handle Custom Inquiry checkbox state
+  //   customCheckbox.disabled = wholePageChecked;
+  
+  //   // Handle Summarize Whole Page checkbox state
+  //   categories.summarizeWholePage.disabled = customChecked;
+  
+  //   // Enable/disable custom text input
+  //   customTextInput.disabled = !customChecked || wholePageChecked;
+  // }
+
+  function enforceExclusiveSelection() {
+    const wholePageChecked = categories.summarizeWholePage.checked;
+    const customChecked = customCheckbox.checked;
+  
+    // Disable "Summarize Whole Page" and "Custom Inquiry" based on mutual exclusivity
+    categories.summarizeWholePage.disabled = customChecked || Object.entries(categories).some(([key, el]) => key !== 'summarizeWholePage' && key !== 'customInquiry' && el.checked);
+    customCheckbox.disabled = wholePageChecked || Object.entries(categories).some(([key, el]) => key !== 'summarizeWholePage' && key !== 'customInquiry' && el.checked);
+  
+    // Disable all other categories if either special one is selected
+    Object.entries(categories).forEach(([key, el]) => {
+      if (key !== 'summarizeWholePage' && key !== 'customInquiry') {
+        el.disabled = wholePageChecked || customChecked;
+      }
     });
+  
+    // Handle custom text input
+    customTextInput.disabled = !customChecked || wholePageChecked;
   }
   
+  
+  customCheckbox.addEventListener('change', enforceExclusiveSelection);
+  categories.summarizeWholePage.addEventListener('change', enforceExclusiveSelection);
+  Object.values(categories).forEach(cb => cb.addEventListener('change', enforceExclusiveSelection));
+
+
+  // Initialize checkboxes
+
 
   let selected = [];
-
   let speech = null;
   let isPaused = false;
   let currentText = '';
 
+  // Toggle custom text input visibility
+  if (customCheckbox) {
+    customCheckbox.addEventListener('change', () => {
+      customTextContainer.style.display = customCheckbox.checked ? 'block' : 'none';
+      if (customCheckbox.checked) {
+        customTextInput.focus();
+      }
+    });
+  }
 
+  // Text-to-speech functionality
   const readSummary = (text) => {
     window.speechSynthesis.cancel();
     speech = new SpeechSynthesisUtterance(text);
     speech.lang = 'en-US';
+    speech.rate = 0.9;
+    speech.pitch = 1;
     currentText = text;
     isPaused = false;
-    readButton.textContent = 'Pause';
+    readButton.innerHTML = '<span class="button-text">Pause</span> <span class="button-icon">❚❚</span>';
   
     speech.onend = () => {
-      readButton.textContent = 'Read Summary';
+      readButton.innerHTML = '<span class="button-text">Read</span> <span class="button-icon">▶</span>';
       isPaused = false;
     };
   
     window.speechSynthesis.speak(speech);
   };
-  
+
+  // Toggle speech playback
   readButton.addEventListener('click', () => {
     if (!speech || (!window.speechSynthesis.speaking && !window.speechSynthesis.paused)) {
       readSummary(currentText);
     } else if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
       window.speechSynthesis.pause();
       isPaused = true;
-      readButton.textContent = 'Play';
+      readButton.innerHTML = '<span class="button-text">Play</span> <span class="button-icon">▶</span>';
     } else if (window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
       isPaused = false;
-      readButton.textContent = 'Pause';
+      readButton.innerHTML = '<span class="button-text">Pause</span> <span class="button-icon">❚❚</span>';
     }
   });
-  
+
+  // Restart speech
   restartButton.addEventListener('click', () => {
     if (currentText) {
       window.speechSynthesis.cancel();
       readSummary(currentText);
     }
   });
-  
 
-
+  // Toggle checkbox states
   const toggleCheckboxes = () => {
     const fullPage = categories.summarizeWholePage.checked;
     Object.entries(categories).forEach(([k, el]) => {
@@ -93,29 +174,47 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   };
 
+  // Set up checkbox event listeners
   Object.values(categories).forEach(cb => cb.addEventListener('change', toggleCheckboxes));
   toggleCheckboxes();
 
+  // Main summarize button handler
   summarizeButton.addEventListener('click', () => {
-    // selected = Object.keys(categories).filter(k => categories[k].checked);
     selected = Object.keys(categories).filter(k => categories[k].checked);
-if (customCheckbox && customCheckbox.checked) {
-  selected.push('custom');
-}
-if (selected.includes('custom') && (!customTextInput.value || customTextInput.value.trim() === '')) {
-  alert("Please enter a custom question for your inquiry.");
-  return;
-}
+    if (customCheckbox && customCheckbox.checked) {
+      selected.push('custom');
+    }
+    
+    if (selected.includes('custom') && (!customTextInput.value || customTextInput.value.trim() === '')) {
+      outputBox.innerHTML = '<div style="color: var(--error-color); text-align: center; padding: 12px;">Please enter a custom question</div>';
+      customTextContainer.style.animation = 'shake 0.4s ease';
+      setTimeout(() => customTextContainer.style.animation = '', 400);
+      return;
+    }
 
-    if (selected.length === 0) return alert("Select at least one category.");
+    if (selected.length === 0) {
+      outputBox.innerHTML = '<div style="color: var(--error-color); text-align: center; padding: 12px;">Select at least one category</div>';
+      return;
+    }
 
-    container.style.display = 'none';
-    summaryUI.style.display = 'block';
-    backButton.style.display = 'none';
-    loadingText.innerText = 'Summarizing in progress...';
+    // Animate transition to summary view
+    container.style.opacity = '0';
+    container.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+      container.style.display = 'none';
+      summaryUI.style.display = 'block';
+      setTimeout(() => {
+        summaryUI.style.opacity = '1';
+        summaryUI.style.transform = 'translateY(0)';
+      }, 50);
+    }, 200);
+
+    loadingText.textContent = 'Analyzing page content...';
     outputBox.innerHTML = '';
+    backButton.style.display = 'none';
+    readButton.style.display = 'none';
+    restartButton.style.display = 'none';
 
-    // Start measuring time
     const startTime = new Date();
 
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
@@ -128,31 +227,39 @@ if (selected.includes('custom') && (!customTextInput.value || customTextInput.va
           categories: selected
         }, (res) => {
           if (!res || !res.content) {
-            outputBox.innerText = '❌ Error extracting content.';
+            outputBox.innerHTML = '<div style="color: var(--error-color); text-align: center; padding: 12px;">Error extracting content</div>';
             return;
           }
-
-          // Perform the summarization after extracting the text
           summarize(res.content, startTime);
         });
       });
     });
   });
 
+  // Back button handler
   backButton.addEventListener('click', () => {
-    container.style.display = 'block';
-    summaryUI.style.display = 'none';
+    summaryUI.style.opacity = '0';
+    summaryUI.style.transform = 'translateY(10px)';
+    setTimeout(() => {
+      summaryUI.style.display = 'none';
+      container.style.display = 'block';
+      setTimeout(() => {
+        container.style.opacity = '1';
+        container.style.transform = 'translateY(0)';
+      }, 50);
+    }, 200);
+    
     window.speechSynthesis.cancel();
-    readButton.textContent = 'Read Summary';
+    readButton.innerHTML = '<span class="button-text">Read</span> <span class="button-icon">▶</span>';
     isPaused = false;
-
   });
 
+  // Main summarization function
   const summarize = (text, startTime) => {
     const loadingBar = document.getElementById('loadingBar');
-    if (loadingBar) loadingBar.style.width = '0%';
-    if (progressPercent) progressPercent.textContent = '0%';
-    if (loadingBarContainer) loadingBarContainer.style.display = 'block';
+    loadingBar.style.width = '0%';
+    progressPercent.textContent = '0%';
+    loadingBarContainer.style.display = 'block';
     document.getElementById('progressPercentLabel').style.display = 'block';
 
     let percent = 0;
@@ -163,8 +270,8 @@ if (selected.includes('custom') && (!customTextInput.value || customTextInput.va
     const progressInterval = setInterval(() => {
       if (percent < maxBeforeStop && !isSummaryReady) {
         percent++;
-        if (loadingBar) loadingBar.style.width = percent + '%';
-        if (progressPercent) progressPercent.textContent = percent + '%';
+        loadingBar.style.width = percent + '%';
+        progressPercent.textContent = percent + '%';
       }
     }, interval);
 
@@ -176,68 +283,139 @@ if (selected.includes('custom') && (!customTextInput.value || customTextInput.va
     }, (res) => {
       isSummaryReady = true;
       clearInterval(progressInterval);
-      if (loadingBar) loadingBar.style.width = '100%';
-      if (progressPercent) progressPercent.textContent = '100%';
+      loadingBar.style.width = '100%';
+      progressPercent.textContent = '100%';
+      
       if (!res || !res.summaries) {
-        outputBox.innerText = '❌ No summaries received.';
+        outputBox.innerHTML = '<div style="color: var(--error-color); text-align: center; padding: 12px;">No summaries received</div>';
         return;
       }
 
-      // Measure the time taken for the entire summarization process
+      // Calculate duration
       const endTime = new Date();
-      const duration = (endTime - startTime) / 1000; // Duration in seconds
+      const duration = (endTime - startTime) / 1000;
       const minutes = Math.floor(duration / 60);
       const seconds = Math.floor(duration % 60);
-      const formattedDuration = `${minutes}m ${seconds}s`;
+      const formattedDuration = `${minutes > 0 ? minutes + 'm ' : ''}${seconds}s`;
 
-      // Display the result summaries
+      // Update UI
       backButton.style.display = 'block';
-      loadingText.innerText = '';
+      loadingText.textContent = '';
       outputBox.innerHTML = '';
 
-      selected.forEach(cat => {
+      // Display summaries
+      selected.forEach((cat, index) => {
         const label = categoryLabels[cat] || cat;
-        const full = res.summaries[cat] || 'No summary returned.';
-        const first = full.split(/[.?!]/)[0] + '.';
+        const full = res.summaries[cat] || 'No summary available for this section.';
+        const first = full.split(/[.?!]/)[0] + (full.match(/[.?!]/) ? '' : '.');
 
-        outputBox.innerHTML += `
-          <div class="summary-block">
-            <h3>Summary for ${label}</h3>
-            <p><strong>Result -</strong> ${first}</p>
-            <button class="expandButton" data-cat="${cat}">Expand Summary</button>
-            <div class="fullSummary" id="sum-${cat}" style="display:none;">
-              <p>${full.replace(/\*/g, '')}</p>
-            </div>
-          </div>`;
+        const summaryBlock = document.createElement('div');
+        summaryBlock.className = 'summary-block';
+        summaryBlock.style.animationDelay = `${index * 0.1}s`;
+        summaryBlock.innerHTML = `
+          <h3>${label}</h3>
+          <p>${first}</p>
+          <button class="expandButton" data-cat="${cat}" aria-expanded="false">
+            <span class="button-text">Show Full Summary</span>
+            <span class="button-icon">▼</span>
+          </button>
+          <div class="fullSummary" id="sum-${cat}" style="display:none;">
+          ${full.replace(/\*/g, '').split(/\n{2,}/).map(section => {
+            const [heading, ...rest] = section.trim().split('\n');
+            return `<h4 style="font-weight:600; font-size:15px; color:var(--text-primary); margin-top:20px; margin-bottom:6px;">${heading}</h4>
+                    <p>${rest.join(' ')}</p>`;
+          }).join('')}
+          
+        </div>
+        
+        `;
+        outputBox.appendChild(summaryBlock);
       });
 
-      // Append the duration at the bottom of the summary
-      outputBox.innerHTML += `
-        <div class="duration">
-          <strong>Time taken: ${formattedDuration}</strong>
-        </div>
-      `;
+      // Add duration
+      const durationElement = document.createElement('div');
+      durationElement.className = 'duration';
+      durationElement.innerHTML = `<strong>Processed in ${formattedDuration}</strong>`;
+      outputBox.appendChild(durationElement);
 
+      // Set up text-to-speech content
+      currentText = selected.map(cat => {
+        const label = categoryLabels[cat] || cat;
+        const full = res.summaries[cat] || 'No summary available.';
+        return `Section: ${label}. Summary: ${full}`;
+      }).join(' ');
+
+      // Show action buttons
       readButton.style.display = 'inline-block';
-restartButton.style.display = 'inline-block';
+      restartButton.style.display = 'inline-block';
 
-const allSummariesText = selected.map(cat => {
-  const label = categoryLabels[cat] || cat;
-  const full = res.summaries[cat] || 'No summary returned.';
-  return `Summary for ${label}: ${full}`;
-}).join(' ');
-currentText = allSummariesText;
-
-
-      // Handle expand/collapse button
+      // Set up expand/collapse functionality
       document.querySelectorAll('.expandButton').forEach(btn => {
         btn.addEventListener('click', () => {
           const div = document.getElementById(`sum-${btn.dataset.cat}`);
           const show = div.style.display === 'none';
           div.style.display = show ? 'block' : 'none';
-          btn.textContent = show ? 'Collapse Summary' : 'Expand Summary';
+          btn.setAttribute('aria-expanded', show);
+          btn.innerHTML = show 
+            ? '<span class="button-text">Hide Summary</span> <span class="button-icon">▲</span>'
+            : '<span class="button-text">Show Full Summary</span> <span class="button-icon">▼</span>';
         });
       });
     });
   };
 });
+
+document.addEventListener("mouseup", () => {
+  const selectedText = window.getSelection().toString().trim();
+
+  const existingBtn = document.getElementById("simplifyButton");
+  if (existingBtn) existingBtn.remove(); // Remove old button if it exists
+
+  if (selectedText.length > 0) {
+    const range = window.getSelection().getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+
+    const btn = document.createElement("button");
+    btn.textContent = "Simplify";
+    btn.id = "simplifyButton";
+    btn.style.position = "fixed";
+    btn.style.top = `${rect.bottom + window.scrollY + 5}px`;
+    btn.style.left = `${rect.left + window.scrollX}px`;
+    btn.style.zIndex = 1000;
+    btn.style.background = "#7f5af0";
+    btn.style.color = "#fff";
+    btn.style.border = "none";
+    btn.style.padding = "4px 8px";
+    btn.style.borderRadius = "4px";
+    btn.style.cursor = "pointer";
+
+
+
+
+    btn.onclick = async () => {
+      btn.textContent = "Simplifying...";
+      try {
+        const response = await fetch("http://127.0.0.1:5000/simplify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: selectedText }),
+        });
+    
+        if (!response.ok) {
+          throw new Error(`Status ${response.status}`);
+        }
+    
+        const data = await response.json();
+        alert("Simplified: " + data.simplified);
+      } catch (err) {
+        alert("Simplify failed: " + err.message);
+        console.error("Simplify error:", err);
+      } finally {
+        btn.remove();
+      }
+    };
+    
+    document.body.appendChild(btn);
+  }
+});
+

@@ -49,13 +49,28 @@ def mcp_handler():
             pdf_url = content.replace("__PDF_URL__:", "")
             content = extract_text_from_pdf(pdf_url)[:10000]
 
-        text_hash = generate_hash(content)
+        text_hash = data.get("textHash") or generate_hash(content)
+
 
         if task == "summarize":
-            final_prompt = custom_prompt if category == "custom" else prompt
-            final_prompt += content
+            if category == "custom" and custom_prompt:
+                final_prompt = f"""{prompt}
 
-            response = client.chat.completions.create(
+The user's inquiry is:
+
+"{custom_prompt}"
+
+Please respond appropriately based on the inquiry and the following Terms and Conditions content.
+"""
+            else:
+                if category == "custom" and custom_prompt:
+                    final_prompt = prompt + "\n\nUser's inquiry:\n" + custom_prompt + "\n\nTerms and Conditions Text:\n" + content
+                else:
+                    final_prompt = prompt + content
+
+
+
+response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a privacy assistant."},

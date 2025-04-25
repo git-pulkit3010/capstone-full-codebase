@@ -128,7 +128,7 @@ What users should understand about internal data handling practices.
 Explain how the data is accessed and used internally, including transfers or transformations.
 **User Impact and Recommendations**  
 Describe what this means for user control, trust, and transparency.
-**References to Terms**  
+**Source References**  
 Name and quote the specific sections, like “Employee Access Policies” or “Internal Use of Data.”
 Text:
 `,
@@ -141,7 +141,7 @@ Summarize where and how personal data is stored.
 Explain how long data is kept, where, and under what security measures.
 **Implications for Privacy**  
 Discuss what these storage practices mean for user security and data retention.
-**Cited Sections from Terms**  
+**Source References**  
 Include direct references to clauses like “Storage and Retention Policy” or “Where We Store Your Data.”
 Text:
 `,
@@ -154,12 +154,44 @@ Describe the company’s general approach to informing users of data breaches.
 Explain how quickly the company commits to informing users and what steps are taken afterward.
 **User Considerations**  
 Discuss what users should expect or do if their data is affected.
-**Referenced Sections in the Terms**  
+**Source References**  
 List the section titles or clauses like “Breach Notification Policy” or “Section 9” that explain these responsibilities.
 Text:
 `,
 
-custom:''
+custom:`You are a privacy assistant helping users understand website Terms and Conditions.
+
+A user has entered the following custom inquiry:  
+**"${message.customPrompt}"**
+
+Your task has two parts:
+
+1. **Validation**:  
+   First, determine whether the input is a valid and meaningful privacy-related question or keyword. If it is vague, offensive, or unrelated to privacy, consent, data protection, or terms and conditions, reply with:  
+   **"Sorry, your question is invalid."**  
+   Do not proceed with analysis if the inquiry is clearly irrelevant (e.g., contains words like "bullshit", "lol", "pizza", etc.).
+
+2. **Contextual Summarization** (Only if input is valid):  
+   If the input is valid, identify what aspect of the terms and conditions the inquiry relates to (e.g., data sharing, personal information collection, retention, breach notification, etc.).
+
+   Then, summarize the relevant parts of the Terms and Conditions below using **plain English** and organize your response into four sections. Do not use numbered headings or markdown. Do not invent any information not found in the content.
+
+   Write your answer using the following structure:
+
+   **Focused Summary**  
+   Clearly explain the part of the terms that relate to the user’s inquiry. Provide a high-level summary based on their keywords or question.
+
+   **Details and Explanation**  
+   Explain specific policies, conditions, or practices relevant to the inquiry. Paraphrase important points and provide context using examples from the terms.
+
+   **User Considerations**  
+   Briefly describe what this means for users — what they should know, expect, or watch out for.
+
+   **Source References**  
+   Point out exactly where this information came from in the terms. Mention the section titles or quote lines such as “Section 4: Data Use” or “under ‘Information Retention Policy’”.
+
+Terms and Conditions Text:
+`
 };
 
 // async function summarizeWithOpenAI(prompt, text, category, callback) {

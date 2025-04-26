@@ -70,7 +70,7 @@ Please respond appropriately based on the inquiry and the following Terms and Co
 
 
 
-response = client.chat.completions.create(
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": "You are a privacy assistant."},

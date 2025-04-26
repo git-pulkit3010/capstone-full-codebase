@@ -17,15 +17,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500&display=swap');
 
 html, body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  width: 300px;
-  height: 600px;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    width: 300px;
+    height: 600px;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
 }
 
 body::-webkit-scrollbar {
@@ -58,7 +58,7 @@ h1 {
 
 #summaryContainer {
   display: none;
-  max-height: 600px;
+  min-height: 600px;
   overflow-y: auto;
   padding: 12px;
   background-color: var(--bg-secondary);
@@ -179,13 +179,15 @@ button {
 }
 
 #summarizedTextContainer {
-  background-color: var(--bg-tertiary);
-  border-radius: 10px;
-  padding: 16px;
-  font-size: 14px;
-  line-height: 1.7;
-  margin-bottom: 16px;
-  border: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary);
+    border-radius: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-color);
 }
 
 .summary-block {
@@ -466,4 +468,26 @@ body.light-mode {
 
 .toggle input:checked + .slider:before {
   transform: translateX(10px);
+}
+
+
+
+body::-webkit-scrollbar {
+    width: 6px;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 3px;
+}
+
+body::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+
+#startButton:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(127, 90, 240, 0.4);
+    transition: all 0.3s ease;
 }

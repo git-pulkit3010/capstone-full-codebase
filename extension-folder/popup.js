@@ -13,7 +13,9 @@ const categoryLabels = {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-  // UI Elements
+    // UI Elements
+  const welcomeScreen = document.getElementById('welcomeScreen');
+  const startButton = document.getElementById('startButton');
   const summarizeButton = document.getElementById('summarizeButton');
   const backButton = document.getElementById('backButton');
   const readButton = document.getElementById('readButton');
@@ -34,6 +36,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const themeToggle = document.getElementById('themeToggle');
 
+  welcomeScreen.style.display = 'flex';
+  container.style.display = 'none';
+  summaryUI.style.display = 'none';
+
+  startButton.addEventListener('click', () => {
+    welcomeScreen.style.display = 'none';
+    container.style.display = 'block';
+  });
+
 // Apply saved theme on load
 if (localStorage.getItem('theme') === 'light') {
   document.body.classList.add('light-mode');
@@ -45,9 +56,11 @@ themeToggle.addEventListener('change', () => {
   if (themeToggle.checked) {
     document.body.classList.add('light-mode');
     localStorage.setItem('theme', 'light');
+    themeEmoji.textContent = '🌞';
   } else {
     document.body.classList.remove('light-mode');
     localStorage.setItem('theme', 'dark');
+    themeEmoji.textContent = '🌙';
   }
 });
 

@@ -95,6 +95,40 @@ Please respond appropriately based on the inquiry and the following Terms and Co
 
 
 @app.route("/simplify", methods=["POST"])
+# def simplify_text():
+#     data = request.get_json()
+#     text = data.get("text", "")
+
+#     if not text:
+#         return jsonify({"error": "No text provided"}), 400
+
+#     prompt = f"""Please explain the following text in the simplest possible terms as if explaining to a 10-year-old child:
+    
+#     Original Text: "{text}"
+    
+#     Simplified Explanation:
+#     1. Use only very common words (maximum 1st-4th grade vocabulary)
+#     2. Break complex ideas into small, bite-sized pieces
+#     3. Use everyday analogies and examples where possible
+#     4. Keep sentences short (max 10-12 words)
+#     5. Avoid all legal/technical jargon completely
+#     6. Structure as: "This means...[simple explanation]...For example...[concrete example]"
+    
+#     Your simplified version:"""
+
+#     response = client.chat.completions.create(
+#         model="gpt-3.5-turbo",
+#         messages=[
+#             {"role": "system", "content": "You are an expert at explaining complex concepts in extremely simple terms."},
+#             {"role": "user", "content": prompt}
+#         ],
+#         temperature=0.7,
+#         max_tokens=500
+#     )
+
+#     simplified = response.choices[0].message.content.strip()
+#     return jsonify({"simplified": simplified})
+
 def simplify_text():
     data = request.get_json()
     text = data.get("text", "")
@@ -103,15 +137,49 @@ def simplify_text():
         return jsonify({"error": "No text provided"}), 400
 
     prompt = f"Explain the following in simpler terms:\n\n{text}\n\nSimplified:"
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7,
-    )
+    response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+        )
 
-    simplified = response['choices'][0]['message']['content'].strip()
+    simplified = response.choices[0].message.content.strip()
     return jsonify({"simplified": simplified})
 
 
+@app.route('/explain', methods=['POST'])
+def explain_snippet():
+    data = request.get_json() or {}
+    snippet = data.get('snippet', '').strip()
+    context = data.get('context', '').strip()
+
+    if not snippet or not context:
+        return jsonify({ 'error': 'Both snippet and context are required.' }), 400
+
+    # Build a prompt that asks the model to explain the snippet in the context of the document
+    prompt = (
+        "Rewrite the highlighted text below as if you were explaining it to someone with no legal or technical background. "
+        "Use short sentences, simple words, and avoid jargon.\n\n"
+        f"Context:\n{context}\n\n"
+        f"Text to simplify:\n{snippet}\n\n"
+        "Simplified explanation:"
+    )
+
+
+    try:
+        resp = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=512
+        )
+        explanation = resp.choices[0].message.content.strip()
+        return jsonify({ 'explanation': explanation })
+    except Exception as e:
+        return jsonify({ 'error': f"LLM call failed: {e}" }), 500
+
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(port=5001)

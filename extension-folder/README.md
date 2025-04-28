@@ -132,7 +132,6 @@ flask --app server.py run --port 5001
 
 ## Contributors
 
-这里我只大概写了些我做的，因为我不太确定其他人干了些啥
 
 - **Backend & Integration**: Zihan Zhou, Peizhou Zhao, Pukit Jain, Juwita Adelina
 - **Frontend UI Development & Improvements**: Peizhou Zhao, Jing Qi, Cariana, Pulkit Jain

@@ -268,19 +268,17 @@ button {
 }
 
 #readButton {
-  background-color: var(--success-color);
+  background-color: var(--accent-color);
 }
-
 #readButton:hover {
-  background-color: #26a56d;
+  background-color: var(--accent-hover);
 }
 
 #restartButton {
-  background-color: var(--warning-color);
+  background-color: var(--accent-color);
 }
-
 #restartButton:hover {
-  background-color: #e68e35;
+  background-color: var(--accent-hover);
 }
 
 #backButton {
@@ -335,7 +333,7 @@ body.light-mode {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 16px;
   font-weight: 500;
-  color: var(--accent-color);
+  color: var(--text-primary);
   margin: 0;
   line-height: 1;
 }
@@ -490,17 +488,4 @@ body::-webkit-scrollbar-track {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(127, 90, 240, 0.4);
     transition: all 0.3s ease;
-}
-
-#welcomeTitle {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--accent-color);
-  margin: 0;
-  padding: 20px 0 10px 0;
-  background: none;
-  border: none;
-  position: static;
-  text-align: center;
 }

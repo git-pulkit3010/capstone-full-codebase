@@ -9,29 +9,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
 <body>
-  <div id="welcomeScreen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 600px; padding: 20px; text-align: center;">
+  <!-- <div id="welcomeScreen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 600px; padding: 20px; text-align: center;">
     <h1 style="font-size: 24px; color: var(--accent-color); margin-bottom: 20px;">Hi, how can I help you?</h1>
     <button id="startButton" style="padding: 10px 20px; font-size: 16px; border-radius: 8px; background-color: var(--accent-color); color: white; border: none; cursor: pointer;">
       Get Started →
     </button>
   
-  </div>
+  </div> -->
 
-
-
-
-  <div class="header">
-    <h1>ConsentBuddy</h1>
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <span id="themeEmoji" style="font-size: 18px;">🌙</span>
+  <div id="welcomeScreen" style="display: flex; flex-direction: column; justify-content: space-between; height: 600px; padding: 20px;">
+    <!-- Top: Title -->
+    <div style="text-align: center;">
+      <h1 id="welcomeTitle">ConsentBuddy</h1>
+    </div>
+  
+    <!-- Middle: Greeting and Button -->
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1;">
+      <h2 style="font-size: 22px; color: var(--text-primary); margin-bottom: 20px;">Hi, how can I help you?</h2>
+      <button id="startButton" style="padding: 10px 20px; font-size: 16px; border-radius: 8px; background-color: var(--accent-color); color: white; border: none; cursor: pointer;">
+        Get Started →
+      </button>
+    </div>
+  
+    <!-- Bottom: Theme Toggle -->
+    <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+      <span id="themeEmoji" style="font-size: 20px;">🌙</span>
       <label class="toggle">
         <input type="checkbox" id="themeToggle">
         <span class="slider"></span>
       </label>
     </div>
   </div>
-
-  
   
   
 

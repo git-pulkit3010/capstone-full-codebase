@@ -54,7 +54,7 @@ def mcp_handler():
         if task != "summarize":
             return jsonify({ "error": "Unknown task" }), 400
 
-        max_content_per_chunk = 3000  # characters (safe with long prompt)
+        max_content_per_chunk = 16000  # characters (safe with long prompt)
 
         def chunk_text(text, size):
             return [text[i:i+size] for i in range(0, len(text), size)]

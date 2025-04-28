@@ -276,17 +276,25 @@ themeToggle.addEventListener('change', () => {
     document.getElementById('progressPercentLabel').style.display = 'block';
 
     let percent = 0;
-    const interval = 100;
     const maxBeforeStop = 95;
     let isSummaryReady = false;
-
+    let dotCount = 0;
+    const interval = 100;
+    
     const progressInterval = setInterval(() => {
-      if (percent < maxBeforeStop && !isSummaryReady) {
-        percent++;
-        loadingBar.style.width = percent + '%';
-        progressPercent.textContent = percent + '%';
-      }
+        if (percent < maxBeforeStop && !isSummaryReady) {
+            percent++;
+            loadingBar.style.width = percent + '%';
+            progressPercent.textContent = percent + '%';
+        } else if (!isSummaryReady) {
+            // Stop incrementing percent, but shimmer loading text
+            dotCount = (dotCount + 1) % 4;
+            const dots = '.'.repeat(dotCount);
+            loadingText.textContent = `Analyzing page content${dots}`;
+        }
     }, interval);
+    
+
 
     chrome.runtime.sendMessage({
       type: 'summarizeText',

@@ -39,7 +39,7 @@ def extract_pdf_text():
 def mcp_handler():
     data = request.get_json()
     task = data.get("task")
-    content = data.get("content")
+    content = data.get("content", "")
     category = data.get("category", "custom")
     prompt = data.get("prompt", "")
     custom_prompt = data.get("customPrompt", "")
@@ -47,88 +47,74 @@ def mcp_handler():
     try:
         if content.startswith("__PDF_URL__:"):
             pdf_url = content.replace("__PDF_URL__:", "")
-            content = extract_text_from_pdf(pdf_url)[:10000]
+            content = extract_text_from_pdf(pdf_url)
 
         text_hash = data.get("textHash") or generate_hash(content)
 
+        if task != "summarize":
+            return jsonify({ "error": "Unknown task" }), 400
 
-        if task == "summarize":
-            if category == "custom" and custom_prompt:
-                final_prompt = f"""{prompt}
+        max_content_per_chunk = 3000  # characters (safe with long prompt)
+
+        def chunk_text(text, size):
+            return [text[i:i+size] for i in range(0, len(text), size)]
+
+        def summarize_chunks(chunks, prompt_base, custom_prompt_inner=""):
+            summaries = []
+
+            for chunk in chunks:
+                if category == "custom" and custom_prompt_inner:
+                    full_prompt = f"""{prompt_base}
 
 The user's inquiry is:
 
-"{custom_prompt}"
+"{custom_prompt_inner}"
 
-Please respond appropriately based on the inquiry and the following Terms and Conditions content.
+Please respond appropriately based on the inquiry and the following Terms and Conditions content:
+
+{chunk}
 """
-            else:
-                if category == "custom" and custom_prompt:
-                    final_prompt = prompt + "\n\nUser's inquiry:\n" + custom_prompt + "\n\nTerms and Conditions Text:\n" + content
                 else:
-                    final_prompt = prompt + content
+                    full_prompt = prompt_base + "\n\n" + chunk
 
+                # Safety: truncate full_prompt if too long
+                if len(full_prompt) > 12000:
+                    full_prompt = full_prompt[:12000]
 
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a privacy assistant."},
+                        {"role": "user", "content": full_prompt}
+                    ],
+                    max_tokens=2048,
+                    temperature=0.7
+                )
 
-            response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a privacy assistant."},
-                    {"role": "user", "content": final_prompt}
-                ],
-                max_tokens=2048,
-                temperature=0.7
-            )
+                summaries.append(response.choices[0].message.content.strip())
 
-            summary = response.choices[0].message.content.strip()
+            return summaries
 
-            return jsonify({
-                "summary": summary,
-                "textHash": text_hash,
-                "category": category
-            })
-        else:
-            return jsonify({ "error": "Unknown task" }), 400
+        chunks = chunk_text(content, max_content_per_chunk)
+        summaries = summarize_chunks(chunks, prompt, custom_prompt)
+
+        # Recursive summarize if even the combined summaries are huge
+        while len("\n\n".join(summaries)) > 12000:
+            summaries = summarize_chunks(chunk_text("\n\n".join(summaries), max_content_per_chunk), "Summarize these partial summaries:")
+
+        final_summary = "\n\n".join(summaries)
+
+        return jsonify({
+            "summary": final_summary,
+            "textHash": text_hash,
+            "category": category
+        })
 
     except Exception as e:
         return jsonify({ "error": f"LLM summarization failed: {str(e)}" }), 500
 
 
 @app.route("/simplify", methods=["POST"])
-# def simplify_text():
-#     data = request.get_json()
-#     text = data.get("text", "")
-
-#     if not text:
-#         return jsonify({"error": "No text provided"}), 400
-
-#     prompt = f"""Please explain the following text in the simplest possible terms as if explaining to a 10-year-old child:
-    
-#     Original Text: "{text}"
-    
-#     Simplified Explanation:
-#     1. Use only very common words (maximum 1st-4th grade vocabulary)
-#     2. Break complex ideas into small, bite-sized pieces
-#     3. Use everyday analogies and examples where possible
-#     4. Keep sentences short (max 10-12 words)
-#     5. Avoid all legal/technical jargon completely
-#     6. Structure as: "This means...[simple explanation]...For example...[concrete example]"
-    
-#     Your simplified version:"""
-
-#     response = client.chat.completions.create(
-#         model="gpt-3.5-turbo",
-#         messages=[
-#             {"role": "system", "content": "You are an expert at explaining complex concepts in extremely simple terms."},
-#             {"role": "user", "content": prompt}
-#         ],
-#         temperature=0.7,
-#         max_tokens=500
-#     )
-
-#     simplified = response.choices[0].message.content.strip()
-#     return jsonify({"simplified": simplified})
-
 def simplify_text():
     data = request.get_json()
     text = data.get("text", "")

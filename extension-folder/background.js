@@ -285,7 +285,7 @@ async function summarizeWithMCP(prompt, text, category, callback, customPrompt =
             task: 'summarize',
             category,
             content: text,
-            prompt: category === 'custom' ? prompt : prompt + text,
+            prompt: prompt,
             customPrompt: customPrompt,
             textHash
         };

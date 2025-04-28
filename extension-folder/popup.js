@@ -9,7 +9,7 @@ const categoryLabels = {
 };
 
 
-// I am using the feature branch right now.
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,54 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const themeToggle = document.getElementById('themeToggle');
 
-  startButton.addEventListener('click', () => {
-    welcomeScreen.remove(); // <-- Completely remove welcome screen
-    // Create new header for categories page
-const header = document.createElement('div');
-header.className = 'header';
-header.innerHTML = `
-  <h1 style="font-size: 18px; font-weight: 600; margin: 0; color: var(--accent-color);">ConsentBuddy</h1>
-  <div style="display: flex; align-items: center; gap: 8px;">
-    <span id="themeEmoji" style="font-size: 18px;">🌙</span>
-    <label class="toggle">
-      <input type="checkbox" id="themeToggle">
-      <span class="slider"></span>
-    </label>
-  </div>
-`;
-document.body.insertBefore(header, container);
-// Re-link theme toggle and emoji after creating new header
-const themeToggleNew = document.getElementById('themeToggle');
-const themeEmojiNew = document.getElementById('themeEmoji');
-
-// Reconnect the event listener
-themeToggleNew.addEventListener('change', () => {
-  if (themeToggleNew.checked) {
-    document.body.classList.add('light-mode');
-    localStorage.setItem('theme', 'light');
-    themeEmojiNew.textContent = '🌞';
-  } else {
-    document.body.classList.remove('light-mode');
-    localStorage.setItem('theme', 'dark');
-    themeEmojiNew.textContent = '🌙';
-  }
-});
-
-// Apply saved theme (in case user already had light mode)
-if (localStorage.getItem('theme') === 'light') {
-  document.body.classList.add('light-mode');
-  themeToggleNew.checked = true;
-  themeEmojiNew.textContent = '🌞';
-}
-
-
-    container.style.display = 'block';
-  });
-  
-
   welcomeScreen.style.display = 'flex';
   container.style.display = 'none';
   summaryUI.style.display = 'none';
+
+  startButton.addEventListener('click', () => {
+    welcomeScreen.style.display = 'none';
+    container.style.display = 'block';
+  });
 
 // Apply saved theme on load
 if (localStorage.getItem('theme') === 'light') {
@@ -315,32 +275,24 @@ themeToggle.addEventListener('change', () => {
     loadingBarContainer.style.display = 'block';
     document.getElementById('progressPercentLabel').style.display = 'block';
 
+    let percent = 0;
     const maxBeforeStop = 95;
     let isSummaryReady = false;
     let dotCount = 0;
     const interval = 100;
-    let percent = 0;
-
-const progressInterval = setInterval(() => {
-    if (percent < maxBeforeStop && !isSummaryReady) {
-        percent++;
-        loadingBar.style.width = percent + '%';
-        progressPercent.textContent = percent + '%';
-    } else if (!isSummaryReady) {
-        // After reaching 95%, crawl VERY slowly towards 99%
-        if (percent < 99) {
-            percent += 0.05; // creep slowly
+    
+    const progressInterval = setInterval(() => {
+        if (percent < maxBeforeStop && !isSummaryReady) {
+            percent++;
             loadingBar.style.width = percent + '%';
-            progressPercent.textContent = Math.floor(percent) + '%';
+            progressPercent.textContent = percent + '%';
+        } else if (!isSummaryReady) {
+            // Stop incrementing percent, but shimmer loading text
+            dotCount = (dotCount + 1) % 4;
+            const dots = '.'.repeat(dotCount);
+            loadingText.textContent = `Analyzing page content${dots}`;
         }
-        
-        // Shimmering dots still animate
-        dotCount = (dotCount + 1) % 4;
-        const dots = '.'.repeat(dotCount);
-        loadingText.textContent = `Analyzing page content${dots}`;
-    }
-}, interval);
-
+    }, interval);
     
 
 
@@ -354,6 +306,9 @@ const progressInterval = setInterval(() => {
       clearInterval(progressInterval);
       loadingBar.style.width = '100%';
       progressPercent.textContent = '100%';
+      loadingBarContainer.style.display = 'none';
+      document.getElementById('progressPercentLabel').style.display = 'none';
+
       
       if (!res || !res.summaries) {
         outputBox.innerHTML = '<div style="color: var(--error-color); text-align: center; padding: 12px;">No summaries received</div>';
@@ -389,26 +344,11 @@ const progressInterval = setInterval(() => {
             <span class="button-icon">▼</span>
           </button>
           <div class="fullSummary" id="sum-${cat}" style="display:none;">
-          ${(() => {
-            const fullWithBoldParsed = full.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            return fullWithBoldParsed
-              .split(/\n{2,}/)
-              .map(section => {
-                section = section.trim();
-                const match = section.match(/<strong>(.*?)<\/strong>/);
-                if (match) {
-                  const heading = match[1];
-                  const rest = section.replace(/<strong>.*?<\/strong>/, '').trim();
-                  return `
-                    <h4 style="font-weight:600; font-size:15px; color:var(--text-primary); margin-top:20px; margin-bottom:6px;">${heading}</h4>
-                    <p>${rest}</p>
-                  `;
-                } else {
-                  return `<p>${section}</p>`;
-                }
-              }).join('');
-          })()}
-          
+          ${full.replace(/\*/g, '').split(/\n{2,}/).map(section => {
+            const [heading, ...rest] = section.trim().split('\n');
+            return `<h4 style="font-weight:600; font-size:15px; color:var(--text-primary); margin-top:20px; margin-bottom:6px;">${heading}</h4>
+                    <p>${rest.join(' ')}</p>`;
+          }).join('')}
           
         </div>
         

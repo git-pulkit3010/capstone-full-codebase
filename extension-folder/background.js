@@ -51,6 +51,10 @@ async function getCachedSummary(textHash, category) {
 
 
 async function storeSummary(textHash, category, summary) {
+    if (category === 'custom') {
+        console.log('Skipping storage for custom inquiry');
+        return;
+    }
     try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         const pageUrl = tab?.url || 'unknown';
@@ -267,8 +271,8 @@ async function summarizeWithMCP(prompt, text, category, callback, customPrompt =
     try {
         const isPDF = text.startsWith('__PDF_URL__:');
         let hashInput = text;
-        if (category === 'custom' && prompt) {
-            hashInput = prompt + '::' + text;  
+        if (category === 'custom' && customPrompt) {
+            hashInput = customPrompt + '::' + text;  
         }
 
         const textHash = await generateHash(hashInput);
@@ -289,8 +293,6 @@ async function summarizeWithMCP(prompt, text, category, callback, customPrompt =
             textHash
         };
 
-
-
         const response = await fetch('http://localhost:5001/mcp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -303,9 +305,11 @@ async function summarizeWithMCP(prompt, text, category, callback, customPrompt =
             throw new Error(data.error);
         }
 
+        // Only store if not custom category
+        if (category !== 'custom') {
+            await storeSummary(data.textHash, category, data.summary);
+        }
         
-
-        await storeSummary(data.textHash, category, data.summary);
         callback(data.summary, false);
     } catch (err) {
         console.error('MCP Summarization Error:', err);

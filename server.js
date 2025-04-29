@@ -68,6 +68,11 @@ pool.getConnection()
 // API endpoints with detailed logging
 app.post('/api/store-summary', async (req, res) => {
     const { textHash, summary, category, url } = req.body;
+    if (category === 'custom') {
+      console.log('Skipping storage for custom inquiry');
+      return res.json({ success: false, message: 'Custom inquiries are not stored' });
+  }
+
   
     console.log('Attempting to insert summary:', { textHash, category, url });
   

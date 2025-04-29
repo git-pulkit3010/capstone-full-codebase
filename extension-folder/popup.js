@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const customTextInput = document.getElementById('customTextInput');
   const customTextContainer = document.getElementById('customTextContainer');
 
+  backButton.style.display = 'none';
+
   const categories = Object.fromEntries(
     Object.keys(categoryLabels).map(k => [k, document.getElementById(k)])
   );
@@ -216,6 +218,7 @@ themeToggle.addEventListener('change', () => {
     setTimeout(() => {
       container.style.display = 'none';
       summaryUI.style.display = 'block';
+      backButton.style.display = 'block';
       setTimeout(() => {
         summaryUI.style.opacity = '1';
         summaryUI.style.transform = 'translateY(0)';
@@ -256,6 +259,7 @@ themeToggle.addEventListener('change', () => {
     setTimeout(() => {
       summaryUI.style.display = 'none';
       container.style.display = 'block';
+      backButton.style.display = 'none';
       setTimeout(() => {
         container.style.opacity = '1';
         container.style.transform = 'translateY(0)';

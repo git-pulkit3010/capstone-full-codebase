@@ -349,10 +349,20 @@ themeToggle.addEventListener('change', () => {
           </button>
           <div class="fullSummary" id="sum-${cat}" style="display:none;">
           ${full.replace(/\*/g, '').split(/\n{2,}/).map(section => {
-            const [heading, ...rest] = section.trim().split('\n');
-            return `<h4 style="font-weight:600; font-size:15px; color:var(--text-primary); margin-top:20px; margin-bottom:6px;">${heading}</h4>
-                    <p>${rest.join(' ')}</p>`;
-          }).join('')}
+            section = section.trim();
+            
+            if (!section.includes('\n')) {
+              // No newline, treat entire thing as paragraph
+              return `<p style="margin-bottom:12px;">${section}</p>`;
+            } else {
+              const [heading, ...rest] = section.split('\n');
+              return `
+                <h4 style="font-weight:600; font-size:15px; color:var(--text-primary); margin-top:20px; margin-bottom:6px;">${heading.trim()}</h4>
+                <p style="margin-bottom:12px;">${rest.join(' ').trim()}</p>
+              `;
+            }
+          }).join('')
+          }
           
         </div>
         
@@ -394,126 +404,292 @@ themeToggle.addEventListener('change', () => {
 });
 
 
-document.addEventListener("mouseup", () => {
-  const sel = window.getSelection();
-  const selectedText = sel.toString().trim();
-  if (!selectedText) return;
+// document.addEventListener("mouseup", () => {
+//   const sel = window.getSelection();
+//   const selectedText = sel.toString().trim();
+//   if (!selectedText) return;
 
-  const outputBox = document.getElementById("summarizedTextContainer");
-  const range = sel.getRangeAt(0);
-  if (!outputBox.contains(range.commonAncestorContainer)) return;
+//   const outputBox = document.getElementById("summarizedTextContainer");
+//   const range = sel.getRangeAt(0);
+//   if (!outputBox.contains(range.commonAncestorContainer)) return;
 
-  // Remove existing button if any
-  const existingBtn = document.getElementById("simplifyPopupButton");
-  if (existingBtn) existingBtn.remove();
+//   // Remove existing button if any
+//   const existingBtn = document.getElementById("simplifyPopupButton");
+//   if (existingBtn) existingBtn.remove();
 
-  // Preserve selection details
-  const rect = range.getBoundingClientRect();
-  const capturedText = selectedText;
-  const scrollY = window.scrollY || window.pageYOffset;
+//   // Preserve selection details
+//   const rect = range.getBoundingClientRect();
+//   const capturedText = selectedText;
+//   const scrollY = window.scrollY || window.pageYOffset;
 
-  const btn = document.createElement("button");
-  btn.id = "simplifyPopupButton";
-  btn.textContent = "Simplify";
-  Object.assign(btn.style, {
-    position: "fixed",
-    top: `${rect.top + window.scrollY - 50}px`,
-    left: `${rect.left + window.scrollX + rect.width / 2}px`,
-    transform: "translateX(-50%)",
-    background: "var(--accent-color)",
-    color: "#fff",
-    border: "none",
-    padding: "6px 12px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    zIndex: 10000,
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-    fontSize: "13px",
-    whiteSpace: "nowrap",
-    textAlign: "center",
-    minWidth: "auto",  // <--- important change
-    maxWidth: "140px", // <--- keeps it neat
-  });
+//   const btn = document.createElement("button");
+//   btn.id = "simplifyPopupButton";
+//   btn.textContent = "Simplify";
+//   Object.assign(btn.style, {
+//     position: "fixed",
+//     top: `${rect.top + window.scrollY - 50}px`,
+//     left: `${rect.left + window.scrollX + rect.width / 2}px`,
+//     transform: "translateX(-50%)",
+//     background: "var(--accent-color)",
+//     color: "#fff",
+//     border: "none",
+//     padding: "6px 12px",
+//     borderRadius: "6px",
+//     cursor: "pointer",
+//     zIndex: 10000,
+//     boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+//     fontSize: "13px",
+//     whiteSpace: "nowrap",
+//     textAlign: "center",
+//     minWidth: "auto",  // <--- important change
+//     maxWidth: "140px", // <--- keeps it neat
+//   });
   
-  document.body.appendChild(btn);
+//   document.body.appendChild(btn);
   
 
-  btn.onclick = async () => {
-    // Preserve selection before any DOM changes
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+//   btn.onclick = async () => {
+//     // Preserve selection before any DOM changes
+//     const selection = window.getSelection();
+//     if (selection.rangeCount > 0) {
+//       selection.removeAllRanges();
+//       selection.addRange(range);
+//     }
 
-    btn.textContent = "Simplifying...";
-    try {
-      const resp = await fetch("http://127.0.0.1:5001/simplify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: capturedText })
-      });
-      const { simplified, error } = await resp.json();
-      if (error) throw new Error(error);
+//     btn.textContent = "Simplifying...";
+//     try {
+//       const resp = await fetch("http://127.0.0.1:5001/simplify", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ text: capturedText })
+//       });
+//       const { simplified, error } = await resp.json();
+//       if (error) throw new Error(error);
 
-      // Create tooltip
-      const isLightMode = document.body.classList.contains('light-mode');
-      const tooltip = document.createElement("div");
-tooltip.innerHTML = `
-  <div style="position:absolute;
-              top:${Math.max(rect.top + window.scrollY - 220, 10)}px;
-              left:${rect.left}px;
-              background: var(--bg-tertiary);
-              color: var(--text-primary);
-              border: 1px solid var(--border-color);
-              padding: 12px;
-              border-radius: 8px;
-              max-width: 300px;
-              max-height: 200px;
-              overflow-y: auto;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-              z-index: 10001;">
-    <div style="margin-bottom:6px;">
-      <strong style="color: var(--accent-color);">Simplified Explanation</strong>
-    </div>
-    <div style="font-size:13px;line-height:1.4;">
-      ${simplified}
-    </div>
-  </div>
-`;
+//       // Create tooltip
+//       const isLightMode = document.body.classList.contains('light-mode');
+//       const tooltip = document.createElement("div");
+// tooltip.innerHTML = `
+//   <div style="position:absolute;
+//               top:${Math.max(rect.top + window.scrollY - 220, 10)}px;
+//               left:${rect.left}px;
+//               background: var(--bg-tertiary);
+//               color: var(--text-primary);
+//               border: 1px solid var(--border-color);
+//               padding: 12px;
+//               border-radius: 8px;
+//               max-width: 300px;
+//               max-height: 200px;
+//               overflow-y: auto;
+//               box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+//               z-index: 10001;">
+//     <div style="margin-bottom:6px;">
+//       <strong style="color: var(--accent-color);">Simplified Explanation</strong>
+//     </div>
+//     <div style="font-size:13px;line-height:1.4;">
+//       ${simplified}
+//     </div>
+//   </div>
+// `;
 
-      document.body.appendChild(tooltip);
+//       document.body.appendChild(tooltip);
       
-      // Close tooltip when clicking outside
-      const closeTooltip = (e) => {
-        if (!tooltip.contains(e.target) && e.target !== btn) {
-          tooltip.remove();
-          document.removeEventListener('click', closeTooltip);
-        }
-      };
-      setTimeout(() => document.addEventListener('click', closeTooltip), 100);
+//       // Close tooltip when clicking outside
+//       const closeTooltip = (e) => {
+//         if (!tooltip.contains(e.target) && e.target !== btn) {
+//           tooltip.remove();
+//           document.removeEventListener('click', closeTooltip);
+//         }
+//       };
+//       setTimeout(() => document.addEventListener('click', closeTooltip), 100);
 
-    } catch (err) {
-      console.error("Simplification failed:", err);
-      // Show error message
-      const errorTooltip = document.createElement("div");
-      errorTooltip.innerHTML = `
-        <div style="position:absolute;
-                    top:${rect.bottom + 30}px;
-                    left:${rect.left}px;
-                    background:var(--error-bg);
-                    color:var(--error-color);
-                    padding:8px 12px;
-                    border-radius:4px;
-                    z-index:10001;">
-          Failed to simplify. Please try again.
-        </div>
+//     } catch (err) {
+//       console.error("Simplification failed:", err);
+//       // Show error message
+//       const errorTooltip = document.createElement("div");
+//       errorTooltip.innerHTML = `
+//         <div style="position:absolute;
+//                     top:${rect.bottom + 30}px;
+//                     left:${rect.left}px;
+//                     background:var(--error-bg);
+//                     color:var(--error-color);
+//                     padding:8px 12px;
+//                     border-radius:4px;
+//                     z-index:10001;">
+//           Failed to simplify. Please try again.
+//         </div>
+//       `;
+//       document.body.appendChild(errorTooltip);
+//       setTimeout(() => errorTooltip.remove(), 3000);
+//     } finally {
+//       btn.remove();
+//       sel.removeAllRanges();
+//     }
+//   };
+// });
+
+
+document.addEventListener("mouseup", () => {
+  setTimeout(() => {  // <-- WRAP EVERYTHING HERE
+    const sel = window.getSelection();
+    const selectedText = sel.toString().trim();
+    if (!selectedText) return;
+
+    const outputBox = document.getElementById("summarizedTextContainer");
+    const range = sel.getRangeAt(0);
+    if (!outputBox.contains(range.commonAncestorContainer)) return;
+
+    const existingBtn = document.getElementById("simplifyPopupButton");
+    if (existingBtn) existingBtn.remove();
+
+    const rect = range.getBoundingClientRect();
+    const capturedText = selectedText;
+
+    const btn = document.createElement("button");
+    btn.id = "simplifyPopupButton";
+    btn.textContent = "Simplify";
+    Object.assign(btn.style, {
+      position: "fixed",
+      // top: `${rect.top + window.scrollY - 50}px`,
+      top: `${Math.max(rect.top + window.scrollY - 50, 10)}px`,
+      left: `${rect.left + window.scrollX + rect.width / 2}px`,
+      transform: "translateX(-50%)",
+      background: "var(--accent-color)",
+      color: "#fff",
+      border: "none",
+      padding: "6px 12px",
+      borderRadius: "6px",
+      cursor: "pointer",
+      zIndex: 10000,
+      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+      fontSize: "13px",
+      whiteSpace: "nowrap",
+      textAlign: "center",
+      minWidth: "auto",
+      maxWidth: "140px",
+    });
+
+    document.body.appendChild(btn);
+
+    // your btn.onclick code (simplification logic) continues here...
+    btn.onclick = async () => {
+      // Preserve selection before any DOM changes
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      btn.disabled = true;
+
+// Create a small "Simplifying..." overlay
+      const loadingOverlay = document.createElement('div');
+      loadingOverlay.id = 'simplifyLoadingOverlay';
+      loadingOverlay.textContent = 'Simplifying...';
+      Object.assign(loadingOverlay.style, {
+        position: 'fixed',
+        top: `${Math.max(rect.top + window.scrollY - 80, 10)}px`,
+        left: `${rect.left + window.scrollX + rect.width / 2}px`,
+        transform: 'translateX(-50%)',
+        background: 'var(--accent-color)',
+        color: '#fff',
+        padding: '6px 12px',
+        borderRadius: '6px',
+        fontSize: '13px',
+        zIndex: '10002',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+      });
+      document.body.appendChild(loadingOverlay);
+      btn.remove()
+
+      const spinnerStyle = document.createElement('style');
+      spinnerStyle.innerHTML = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
       `;
-      document.body.appendChild(errorTooltip);
-      setTimeout(() => errorTooltip.remove(), 3000);
-    } finally {
-      btn.remove();
-      sel.removeAllRanges();
-    }
-  };
+
+      try {
+        const resp = await fetch("http://127.0.0.1:5001/simplify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: capturedText })
+        });
+        const { simplified, error } = await resp.json();
+        if (error) throw new Error(error);
+  
+        // Create tooltip
+        const isLightMode = document.body.classList.contains('light-mode');
+        const tooltip = document.createElement("div");
+  tooltip.innerHTML = `
+    <div style="position:absolute;
+                top:${Math.max(rect.top + window.scrollY - 220, 10)}px;
+                left:${rect.left}px;
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                border: 1px solid var(--border-color);
+                padding: 12px;
+                border-radius: 8px;
+                max-width: 300px;
+                max-height: 200px;
+                overflow-y: auto;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10001;">
+      <div style="margin-bottom:6px;">
+        <strong style="color: var(--accent-color);">Simplified Explanation</strong>
+      </div>
+      <div style="font-size:13px;line-height:1.4;">
+        ${simplified}
+      </div>
+    </div>
+  `;
+  
+  setTimeout(() => {
+    document.body.appendChild(tooltip);
+    if (btn) btn.remove();
+  
+    // Remove the loading overlay after tooltip appears
+    const overlay = document.getElementById('simplifyLoadingOverlay');
+    if (overlay) overlay.remove();
+  }, 600);
+        
+        // Close tooltip when clicking outside
+        const closeTooltip = (e) => {
+          if (!tooltip.contains(e.target) && e.target !== btn) {
+            tooltip.remove();
+            document.removeEventListener('click', closeTooltip);
+          }
+        };
+        setTimeout(() => document.addEventListener('click', closeTooltip), 100);
+  
+      } catch (err) {
+        console.error("Simplification failed:", err);
+        // Show error message
+        const errorTooltip = document.createElement("div");
+        errorTooltip.innerHTML = `
+          <div style="position:absolute;
+                      top:${rect.bottom + 30}px;
+                      left:${rect.left}px;
+                      background:var(--error-bg);
+                      color:var(--error-color);
+                      padding:8px 12px;
+                      border-radius:4px;
+                      z-index:10001;">
+            Failed to simplify. Please try again.
+          </div>
+        `;
+        document.body.appendChild(errorTooltip);
+        setTimeout(() => errorTooltip.remove(), 3000);
+      } finally {
+        sel.removeAllRanges();
+      }
+    };
+  }, 50);  // <-- 50ms slight delay
+});
+
+document.addEventListener("mousedown", (e) => {
+  const simplifyBtn = document.getElementById("simplifyPopupButton");
+  if (simplifyBtn && !simplifyBtn.contains(e.target)) {
+    simplifyBtn.remove();
+  }
 });

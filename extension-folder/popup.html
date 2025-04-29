@@ -8,6 +8,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 </head>
+
+
+
+
+<div class="header">
+  <button id="backButton" style="display:none; background:none; border:none; color:var(--text-primary); font-size:16px; cursor:pointer;">←</button>
+  <h1>ConsentBuddy</h1>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span id="themeEmoji" style="font-size: 18px;">🌙</span>
+    <label class="toggle">
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+</div>
+
+
+
+
 <body>
   <div id="welcomeScreen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 600px; padding: 20px; text-align: center;">
     <h1 style="font-size: 28px; color: var(--accent-color); margin-bottom: 12px;">ConsentBuddy</h1>
@@ -21,21 +40,6 @@
 
 
 
-  <div class="header">
-    <button id="backButton" style="display:none; background:none; border:none; color:var(--text-primary); font-size:16px; cursor:pointer;">←</button>
-    <h1>ConsentBuddy</h1>
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <span id="themeEmoji" style="font-size: 18px;">🌙</span>
-      <label class="toggle">
-        <input type="checkbox" id="themeToggle">
-        <span class="slider"></span>
-      </label>
-    </div>
-  </div>
-
-  
-  
-  
 
   <!-- Categories Checkboxes -->
   <div id="categoryContainer">

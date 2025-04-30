@@ -54,89 +54,6 @@ def mcp_handler():
         if task != "summarize":
             return jsonify({ "error": "Unknown task" }), 400
 
-        # Special handling for custom inquiries
-        if category == "custom":
-            validation_prompt = f"""Analyze this question for relevance to Terms and Conditions or Privacy Policies:
-    "{custom_prompt}"
-    
-    Respond ONLY with:
-    - "valid" if about privacy/terms
-    - "invalid" if completely unrelated"""
-
-        validation = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a validation assistant."},
-            {"role": "user", "content": validation_prompt}
-        ],
-        max_tokens=10,
-        temperature=0
-    ).choices[0].message.content.strip().lower()
-    
-        if "invalid" in validation:
-            return jsonify({
-                "summary": "**Invalid Inquiry**\nPlease ask a question related to Terms and Conditions or Privacy Policies.",
-                "textHash": text_hash,
-                "category": category
-            })
-            
-            relevance_prompt = f"""Identify the most relevant sections from these Terms and Conditions 
-            that relate to this question: "{custom_prompt}". 
-            Return only the most pertinent excerpts (max 4000 characters) that would help answer the question.
-            
-            Terms and Conditions:
-            {content[:20000]}"""  # Initial chunk to find relevance
-            
-            relevance_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful privacy assistant."},
-                    {"role": "user", "content": relevance_prompt}
-                ],
-                max_tokens=1024,
-                temperature=0.3
-            )
-            
-            relevant_content = relevance_response.choices[0].message.content.strip()
-            
-            # Now answer the question using just the relevant content
-            answer_prompt = f"""You are a privacy assistant helping users understand website Terms and Conditions.
-            The user asked: "{custom_prompt}"
-
-            Please provide a single, concise answer (1-2 paragraphs max) using ONLY the following relevant excerpts.
-            Focus on being clear and to the point. Avoid legal jargon.
-
-            Relevant excerpts:
-            {relevant_content}
-
-            Structure your response as:
-            **Answer**  
-            [Your direct answer]
-
-            **Key Point**  
-            [One most important detail]
-
-            **Source**  
-            [Document reference if available]"""
-            
-            answer_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful privacy assistant."},
-                    {"role": "user", "content": answer_prompt}
-                ],
-                max_tokens=512,
-                temperature=0.3
-            )
-            
-            summary = answer_response.choices[0].message.content.strip()
-            return jsonify({
-                "summary": summary,
-                "textHash": text_hash,
-                "category": category
-            })
-
-        # Original chunking logic for non-custom categories
         max_content_per_chunk = 16000
 
         def chunk_text(text, size):
@@ -148,10 +65,37 @@ def mcp_handler():
             for chunk in chunks:
                 if category == "custom" and custom_prompt_inner:
                     full_prompt = f"""{prompt_base}
+
 The user's inquiry is:
+
 "{custom_prompt_inner}"
-Please respond appropriately based on the inquiry and the following Terms and Conditions content:
+
+Please respond based only on the following Terms and Conditions content:
+
 {chunk}
+
+Do NOT use general knowledge or assumptions.
+If the answer cannot be found in the text, say:
+
+**Answer**  
+The document does not contain a relevant section to answer this question.
+
+**Key Point**  
+No matching clause found.
+
+**Source**  
+Not applicable.
+
+Otherwise, respond using:
+
+**Answer**  
+[Your concise answer]
+
+**Key Point**  
+[The most important clause]
+
+**Source**  
+[A direct quote or section title]
 """
                 else:
                     full_prompt = prompt_base + "\n\n" + chunk
@@ -162,7 +106,7 @@ Please respond appropriately based on the inquiry and the following Terms and Co
                 response = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
-                        {"role": "system", "content": "You are a privacy assistant."},
+                        {"role": "system", "content": "You are a privacy assistant helping users understand legal documents."},
                         {"role": "user", "content": full_prompt}
                     ],
                     max_tokens=2048,
@@ -189,6 +133,9 @@ Please respond appropriately based on the inquiry and the following Terms and Co
 
     except Exception as e:
         return jsonify({ "error": f"LLM summarization failed: {str(e)}" }), 500
+
+
+
 
 
 @app.route("/simplify", methods=["POST"])

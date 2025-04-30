@@ -163,28 +163,7 @@ List the section titles or clauses like “Breach Notification Policy” or “S
 Text:
 `,
 
-custom: `You are a privacy assistant helping users understand website Terms and Conditions.
-
-First, analyze if the user's question is related to privacy, terms, or legal matters.
-If clearly unrelated (like random numbers, jokes, or off-topic questions), respond with:
-
-**Invalid Inquiry**  
-Please ask a question related to Terms and Conditions or Privacy Policies.
-
-For valid questions:
-1. Provide one direct answer (1 paragraph max)
-2. Include only the most relevant point
-3. Reference the specific section
-
-Structure your response as:
-**Answer**  
-[Concise answer]
-
-**Key Point**  
-[Single most important detail]
-
-**Source**  
-[Specific section reference]`
+custom: ''
     
 };
 
@@ -347,11 +326,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         const userCustomPrompt = message.customPrompt || '';
         selected.forEach(category => {
-            let promptToUse = prompts[category] + text;  
+            let promptToUse = prompts[category] + text;
             if (category === 'custom') {
-                promptToUse = prompts.custom + (message.customPrompt || '') + "\n\nTerms and Conditions Text:\n" + text;
+                // For custom inquiries, we only need the custom prompt (handled by backend)
+                promptToUse = ""; // Empty prompt since backend will construct it
             }
-
+        
             summarizeWithMCP(
                 promptToUse,
                 text,
@@ -362,7 +342,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     if (completed === selected.length) {
                         sendResponse({ summaries });
                     }
-                }
+                },
+                category === 'custom' ? message.customPrompt || '' : '' // Pass custom prompt only for custom category
             );
         });
 

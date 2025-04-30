@@ -64,39 +64,26 @@ def mcp_handler():
 
             for chunk in chunks:
                 if category == "custom" and custom_prompt_inner:
-                    full_prompt = f"""{prompt_base}
+                    full_prompt = f"""You are a legal summarizer that provides ultra-concise answers to questions about Terms and Conditions.
 
-The user's inquiry is:
+Question: "{custom_prompt_inner}"
 
-"{custom_prompt_inner}"
+Document excerpt: "{chunk}"
 
-Please respond based only on the following Terms and Conditions content:
+Provide the answer in EXACTLY this 3-line format:
+Answer: [Maximum 10 words - direct answer only]
+Key Point: [5 words max - most critical detail]
+Source: [Section name/number - 5 words max]
 
-{chunk}
-
-Do NOT use general knowledge or assumptions.
-If the answer cannot be found in the text, say:
-
-**Answer**  
-The document does not contain a relevant section to answer this question.
-
-**Key Point**  
-No matching clause found.
-
-**Source**  
-Not applicable.
-
-Otherwise, respond using:
-
-**Answer**  
-[Your concise answer]
-
-**Key Point**  
-[The most important clause]
-
-**Source**  
-[A direct quote or section title]
-"""
+Rules:
+1. If the answer isn't found, respond with:
+   Answer: Not covered
+   Key Point: N/A
+   Source: N/A
+2. Never exceed the word limits
+3. Use only simple, non-legal language
+4. Never include examples or explanations
+5. Never write more than requested"""
                 else:
                     full_prompt = prompt_base + "\n\n" + chunk
 
@@ -117,9 +104,37 @@ Otherwise, respond using:
 
             return summaries
 
+        # ✅ Handle custom inquiry with gibberish detection
+        if category == "custom":
+            validation_prompt = f"""Determine whether this user question is meaningful and related to Terms and Conditions or Privacy Policies.
+
+Question: "{custom_prompt}"
+
+Reply with only one word: "yes" if it is valid, "no" if it is nonsense or unrelated.
+"""
+
+            validation = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a validation assistant."},
+                    {"role": "user", "content": validation_prompt}
+                ],
+                max_tokens=5,
+                temperature=0
+            ).choices[0].message.content.strip().lower()
+
+            if validation.startswith("no"):
+                return jsonify({
+                    "summary": "Answer: Not covered\nKey Point: N/A\nSource: N/A",
+                    "textHash": text_hash,
+                    "category": category
+                })
+
+        # ✅ Chunking and summarization
         chunks = chunk_text(content, max_content_per_chunk)
         summaries = summarize_chunks(chunks, prompt, custom_prompt)
 
+        # ✅ Optional re-summarize if still too long
         while len("\n\n".join(summaries)) > 12000:
             summaries = summarize_chunks(chunk_text("\n\n".join(summaries), max_content_per_chunk), "Summarize these partial summaries:")
 
@@ -133,6 +148,7 @@ Otherwise, respond using:
 
     except Exception as e:
         return jsonify({ "error": f"LLM summarization failed: {str(e)}" }), 500
+
 
 
 

@@ -61,7 +61,7 @@ def mcp_handler():
 
         def summarize_chunks(chunks, prompt_base, custom_prompt_inner=""):
             summaries = []
-
+            
             for chunk in chunks:
                 if category == "custom" and custom_prompt_inner:
                     full_prompt = f"""You are a legal summarizer that provides ultra-concise answers to questions about Terms and Conditions.
@@ -76,14 +76,11 @@ Key Point: [5 words max - most critical detail]
 Source: [Section name/number - 5 words max]
 
 Rules:
-1. If the answer isn't found, respond with:
-   Answer: Not covered
-   Key Point: N/A
-   Source: N/A
-2. Never exceed the word limits
-3. Use only simple, non-legal language
-4. Never include examples or explanations
-5. Never write more than requested"""
+1. ONLY say "Not covered" if ABSOLUTELY no relevant content exists
+2. MUST extract answer from document if any part relates
+3. Use simplest possible language
+4. Never exceed word limits
+5. Prioritize accuracy over completeness"""
                 else:
                     full_prompt = prompt_base + "\n\n" + chunk
 
@@ -96,45 +93,37 @@ Rules:
                         {"role": "system", "content": "You are a privacy assistant helping users understand legal documents."},
                         {"role": "user", "content": full_prompt}
                     ],
-                    max_tokens=2048,
-                    temperature=0.7
+                    max_tokens=250,
+                    temperature=0.3
                 )
 
-                summaries.append(response.choices[0].message.content.strip())
+                summary = response.choices[0].message.content.strip()
+
+                if ("not covered" in summary.lower() and 
+                    summary.startswith("Answer: Not covered")):
+                    return ["Answer: Not covered\nKey Point: N/A\nSource: N/A"]
+
+                summaries.append(summary)
 
             return summaries
 
-        # ✅ Handle custom inquiry with gibberish detection
-        if category == "custom":
-            validation_prompt = f"""Determine whether this user question is meaningful and related to Terms and Conditions or Privacy Policies.
-
-Question: "{custom_prompt}"
-
-Reply with only one word: "yes" if it is valid, "no" if it is nonsense or unrelated.
-"""
-
-            validation = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a validation assistant."},
-                    {"role": "user", "content": validation_prompt}
-                ],
-                max_tokens=5,
-                temperature=0
-            ).choices[0].message.content.strip().lower()
-
-            if validation.startswith("no"):
+        # First try with full content before chunking
+        try:
+            initial_response = summarize_chunks([content], prompt, custom_prompt)
+            if not any("Not covered" in s for s in initial_response):
                 return jsonify({
-                    "summary": "Answer: Not covered\nKey Point: N/A\nSource: N/A",
+                    "summary": "\n\n".join(initial_response),
                     "textHash": text_hash,
                     "category": category
                 })
+        except Exception as e:
+            print(f"Full content summarization attempt failed, falling back to chunks: {str(e)}")
 
-        # ✅ Chunking and summarization
+        # Fall back to chunking if full content attempt failed
         chunks = chunk_text(content, max_content_per_chunk)
         summaries = summarize_chunks(chunks, prompt, custom_prompt)
 
-        # ✅ Optional re-summarize if still too long
+        # Optional re-summarize if still too long
         while len("\n\n".join(summaries)) > 12000:
             summaries = summarize_chunks(chunk_text("\n\n".join(summaries), max_content_per_chunk), "Summarize these partial summaries:")
 

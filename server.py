@@ -62,9 +62,9 @@ def mcp_handler():
         # def summarize_chunks(chunks, prompt_base, custom_prompt_inner=""):
         #     summaries = []
             
-            for chunk in chunks:
-                if category == "custom" and custom_prompt_inner:
-                    full_prompt = f"""You are a legal summarizer that provides ultra-concise answers to questions about Terms and Conditions.
+            
+        if category == "custom" and custom_prompt:
+            full_prompt = f"""You are a legal summarizer that provides ultra-concise answers to questions about Terms and Conditions.
 
 Question: "{custom_prompt}"
 
@@ -81,23 +81,23 @@ Rules:
 3. Use simplest possible language
 4. Never exceed word limits
 5. Prioritize accuracy over completeness"""
-                else:
-                    full_prompt = prompt_base + "\n\n" + content
+        else:
+            full_prompt = prompt + "\n\n" + content
 
-                # if len(full_prompt) > 12000:
-                #     full_prompt = full_prompt[:12000]
+        # if len(full_prompt) > 12000:
+        #     full_prompt = full_prompt[:12000]
 
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": "You are a privacy assistant helping users understand legal documents."},
-                        {"role": "user", "content": full_prompt}
-                    ],
-                    max_tokens=250,
-                    temperature=0.3
-                )
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a privacy assistant helping users understand legal documents."},
+                {"role": "user", "content": full_prompt}
+            ],
+            max_tokens=250,
+            temperature=0.3
+        )
 
-                summary = response.choices[0].message.content.strip()
+        summary = response.choices[0].message.content.strip()
 
         #         if ("not covered" in summary.lower() and 
         #             summary.startswith("Answer: Not covered")):
@@ -130,7 +130,7 @@ Rules:
         # final_summary = "\n\n".join(summaries)
 
         return jsonify({
-            "summary": final_summary,
+            "summary": summary,
             "textHash": text_hash,
             "category": category
         })

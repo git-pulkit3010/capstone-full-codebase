@@ -162,9 +162,24 @@ Discuss what users should expect or do if their data is affected.
 List the section titles or clauses like “Breach Notification Policy” or “Section 9” that explain these responsibilities.
 Text:
 `,
+custom: `You are a legal summarizer that answers user questions about Terms & Conditions documents.
 
-custom: ''
-    
+Before you begin, validate the user's question:
+- If the question makes no sense (random letters/symbols/gibberish), respond with:
+  "Answer: Please ask a valid question\nKey Point: N/A\nSource: N/A"
+
+If the question is valid, then:
+- Read the document below and attempt to answer using only its contents.
+- Only say "Not covered" if the document has **absolutely no relevant content**.
+
+Format your answer using **exactly** this structure:
+Answer: [max 10 words]
+Key Point: [max 5 words]
+Source: [section or clause, max 5 words]
+
+Document:
+`
+
 };
 
 // async function summarizeWithOpenAI(prompt, text, category, callback) {

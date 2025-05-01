@@ -333,9 +333,9 @@ themeToggle.addEventListener('change', () => {
 
       // Display summaries
       selected.forEach((cat, index) => {
-        const label = categoryLabels[cat] || cat;
+        const label = categoryLabels[cat] || (cat === 'custom' ? 'Answer to Inquiry' : cat);
         const full = res.summaries[cat] || 'No summary available for this section.';
-        const first = full.split(/[.?!]/)[0] + (full.match(/[.?!]/) ? '' : '.');
+        const first = full.split(/[.?!]/)[0].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + (full.match(/[.?!]/) ? '' : '.');
 
         const summaryBlock = document.createElement('div');
         summaryBlock.className = 'summary-block';

@@ -54,83 +54,88 @@ def mcp_handler():
         if task != "summarize":
             return jsonify({ "error": "Unknown task" }), 400
 
-        max_content_per_chunk = 16000
+        # max_content_per_chunk = 16000
 
-        def chunk_text(text, size):
-            return [text[i:i+size] for i in range(0, len(text), size)]
+        # def chunk_text(text, size):
+        #     return [text[i:i+size] for i in range(0, len(text), size)]
 
-        def summarize_chunks(chunks, prompt_base, custom_prompt_inner=""):
-            summaries = []
+        # def summarize_chunks(chunks, prompt_base, custom_prompt_inner=""):
+        #     summaries = []
             
-            for chunk in chunks:
-                if category == "custom" and custom_prompt_inner:
-                    full_prompt = f"""You are a legal summarizer that provides ultra-concise answers to questions about Terms and Conditions.
+            
+        if category == "custom" and custom_prompt:
+            full_prompt = f"""You are a legal assistant. The user has a question about a Terms and Conditions document.
 
-Question: "{custom_prompt_inner}"
+Question: "{custom_prompt}"
 
-Document excerpt: "{chunk}"
+Document:
+"{content}"
 
-Provide the answer in EXACTLY this 3-line format:
-Answer: [Maximum 10 words - direct answer only]
-Key Point: [5 words max - most critical detail]
-Source: [Section name/number - 5 words max]
+If the question is nonsense (random characters, not a real query), respond with:
+Answer: Please ask a valid question
+Key Point: N/A
+Source: N/A
 
-Rules:
-1. ONLY say "Not covered" if ABSOLUTELY no relevant content exists
-2. MUST extract answer from document if any part relates
-3. Use simplest possible language
-4. Never exceed word limits
-5. Prioritize accuracy over completeness"""
-                else:
-                    full_prompt = prompt_base + "\n\n" + chunk
+If the question is clear and meaningful:
+- If a short answer is sufficient, give a concise answer in 3 lines:
+  Answer: [up to 50 words]
+  Key Point: [most critical takeaway]
+  Source: [section name or quote]
+- If a detailed explanation is needed, follow the same structure, but allow the **Answer** section to span 4-6 sentences (max 150 words).
 
-                if len(full_prompt) > 12000:
-                    full_prompt = full_prompt[:12000]
+Never go outside the document. Only answer based on what the document contains.
+Use plain English. Avoid legal jargon.
+"""
+        else:
+            full_prompt = prompt + "\n\n" + content
 
-                response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "You are a privacy assistant helping users understand legal documents."},
-                        {"role": "user", "content": full_prompt}
-                    ],
-                    max_tokens=250,
-                    temperature=0.3
-                )
+        # if len(full_prompt) > 12000:
+        #     full_prompt = full_prompt[:12000]
 
-                summary = response.choices[0].message.content.strip()
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a privacy assistant helping users understand legal documents."},
+                {"role": "user", "content": full_prompt}
+            ],
+            max_tokens=1024,
+            temperature=0.3
+        )
 
-                if ("not covered" in summary.lower() and 
-                    summary.startswith("Answer: Not covered")):
-                    return ["Answer: Not covered\nKey Point: N/A\nSource: N/A"]
+        summary = response.choices[0].message.content.strip()
 
-                summaries.append(summary)
+        #         if ("not covered" in summary.lower() and 
+        #             summary.startswith("Answer: Not covered")):
+        #             return ["Answer: Not covered\nKey Point: N/A\nSource: N/A"]
 
-            return summaries
+        #         summaries.append(summary)
 
-        # First try with full content before chunking
-        try:
-            initial_response = summarize_chunks([content], prompt, custom_prompt)
-            if not any("Not covered" in s for s in initial_response):
-                return jsonify({
-                    "summary": "\n\n".join(initial_response),
-                    "textHash": text_hash,
-                    "category": category
-                })
-        except Exception as e:
-            print(f"Full content summarization attempt failed, falling back to chunks: {str(e)}")
+        #     return summaries
 
-        # Fall back to chunking if full content attempt failed
-        chunks = chunk_text(content, max_content_per_chunk)
-        summaries = summarize_chunks(chunks, prompt, custom_prompt)
+        # # First try with full content before chunking
+        # # try:
+        # #     initial_response = summarize_chunks([content], prompt, custom_prompt)
+        # #     if not any("Not covered" in s for s in initial_response):
+        # #         return jsonify({
+        # #             "summary": "\n\n".join(initial_response),
+        # #             "textHash": text_hash,
+        # #             "category": category
+        # #         })
+        # # except Exception as e:
+        # #     print(f"Full content summarization attempt failed, falling back to chunks: {str(e)}")
 
-        # Optional re-summarize if still too long
-        while len("\n\n".join(summaries)) > 12000:
-            summaries = summarize_chunks(chunk_text("\n\n".join(summaries), max_content_per_chunk), "Summarize these partial summaries:")
+        # # # Fall back to chunking if full content attempt failed
+        # # chunks = chunk_text(content, max_content_per_chunk)
+        # # summaries = summarize_chunks(chunks, prompt, custom_prompt)
 
-        final_summary = "\n\n".join(summaries)
+        # # Optional re-summarize if still too long
+        # while len("\n\n".join(summaries)) > 12000:
+        #     summaries = summarize_chunks(chunk_text("\n\n".join(summaries), max_content_per_chunk), "Summarize these partial summaries:")
+
+        # final_summary = "\n\n".join(summaries)
 
         return jsonify({
-            "summary": final_summary,
+            "summary": summary,
             "textHash": text_hash,
             "category": category
         })

@@ -281,14 +281,41 @@ button {
   background-color: var(--accent-hover);
 }
 
-#backButton {
+/* #backButton {
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
+} */
+
+#backButton {
+  background-color: var(--bg-tertiary);
+  color: var(--accent-color);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #backButton:hover {
-  background-color: #363636;
+  background-color: var(--bg-secondary);
+  color: var(--accent-hover);
 }
+
+#backButton .button-text {
+  font-size: 14px;
+}
+
+#backButton .button-icon {
+  font-size: 16px;
+}
+/* #backButton:hover {
+  background-color: #363636;
+} */
 
 .duration {
   font-size: 13px;
@@ -488,4 +515,27 @@ body::-webkit-scrollbar-track {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(127, 90, 240, 0.4);
     transition: all 0.3s ease;
+}
+
+.back-button {
+  background-color: transparent;
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 12px auto;
+  display: flex;
+  justify-content: center;
+}
+
+.back-button:hover {
+  background-color: var(--accent-color);
+  color: #fff;
 }

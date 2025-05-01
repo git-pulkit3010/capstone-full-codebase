@@ -265,7 +265,8 @@ async function summarizeWithMCP(prompt, text, category, callback, customPrompt =
             hashInput = customPrompt + '::' + text;  
         }
 
-        const textHash = await generateHash(hashInput);
+        const cleanedText = text.replace(/\s+/g, ' ').trim();
+        const textHash = await generateHash(cleanedText);
 
         const existing = await getCachedSummary(textHash, category);
         if (existing) {

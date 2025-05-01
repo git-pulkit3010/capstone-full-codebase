@@ -64,23 +64,28 @@ def mcp_handler():
             
             
         if category == "custom" and custom_prompt:
-            full_prompt = f"""You are a legal summarizer that provides ultra-concise answers to questions about Terms and Conditions.
+            full_prompt = f"""You are a legal assistant. The user has a question about a Terms and Conditions document.
 
 Question: "{custom_prompt}"
 
-Document excerpt: "{content}"
- ONLY say "Not covered" if ABSOLUTELY no relevant content exists (when there are stupid words and non-words that have no context to the task at hand - summarizing T&C documents)
-Provide the answer in EXACTLY this 3-line format:
-Answer: [Maximum 10 words - direct answer only]
-Key Point: [5 words max - most critical detail]
-Source: [Section name/number - 5 words max]
+Document:
+"{content}"
 
-Rules:
-1. ONLY say "Not covered" if ABSOLUTELY no relevant content exists (when there are stupid words and non-words that have no context to the task at hand - summarizing T&C documents)
-2. MUST extract answer from document if any part relates
-3. Use simplest possible language
-4. Never exceed word limits
-5. Prioritize accuracy over completeness"""
+If the question is nonsense (random characters, not a real query), respond with:
+Answer: Please ask a valid question
+Key Point: N/A
+Source: N/A
+
+If the question is clear and meaningful:
+- If a short answer is sufficient, give a concise answer in 3 lines:
+  Answer: [up to 50 words]
+  Key Point: [most critical takeaway]
+  Source: [section name or quote]
+- If a detailed explanation is needed, follow the same structure, but allow the **Answer** section to span 4-6 sentences (max 150 words).
+
+Never go outside the document. Only answer based on what the document contains.
+Use plain English. Avoid legal jargon.
+"""
         else:
             full_prompt = prompt + "\n\n" + content
 
@@ -93,7 +98,7 @@ Rules:
                 {"role": "system", "content": "You are a privacy assistant helping users understand legal documents."},
                 {"role": "user", "content": full_prompt}
             ],
-            max_tokens=250,
+            max_tokens=1024,
             temperature=0.3
         )
 

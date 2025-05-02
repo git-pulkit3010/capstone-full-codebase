@@ -539,3 +539,16 @@ body::-webkit-scrollbar-track {
   background-color: var(--accent-color);
   color: #fff;
 }
+
+.source-link {
+  color: var(--accent-color);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.source-link:hover {
+  color: var(--accent-hover);
+  text-decoration: none;
+}

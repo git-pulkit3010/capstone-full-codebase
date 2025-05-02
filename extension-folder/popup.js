@@ -234,6 +234,9 @@ themeToggle.addEventListener('change', () => {
     const startTime = new Date();
 
     chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+      loadingText.textContent = 'Preparing document...';
+      loadingBarContainer.style.display = 'block';
+
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
         files: ['content.js']

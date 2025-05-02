@@ -98,7 +98,7 @@ Use plain English. Avoid legal jargon.
                 {"role": "system", "content": "You are a privacy assistant helping users understand legal documents."},
                 {"role": "user", "content": full_prompt}
             ],
-            max_tokens=1024,
+            max_tokens=2048,
             temperature=0.3
         )
 

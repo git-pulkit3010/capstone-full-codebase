@@ -80,7 +80,7 @@ If the question is clear and meaningful:
 - If a short answer is sufficient, give a concise answer in 3 lines:
   Answer: [up to 50 words]
   Key Point: [most critical takeaway]
-  Source: [section name or quote]
+  Source: [section name or quote, max 5 words] (must be exact match to document section)
 - If a detailed explanation is needed, follow the same structure, but allow the **Answer** section to span 4-6 sentences (max 150 words).
 
 Never go outside the document. Only answer based on what the document contains.

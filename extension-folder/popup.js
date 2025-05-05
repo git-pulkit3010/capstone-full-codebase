@@ -5,7 +5,8 @@ const categoryLabels = {
   piStorage: 'Personal Information Storage',
   piSharing: 'Personal Information Sharing',
   dataConfidentiality: 'Data Confidentiality & Security',
-  breachNotice: 'Data Breach Notification'
+  breachNotice: 'Data Breach Notification',
+  withdrawConsent: 'Consent and Opt-out Options'
 };
 
 

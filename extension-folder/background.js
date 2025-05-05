@@ -97,6 +97,24 @@ Explain the significance of these practices for privacy, consent, and tracking.
 List specific sections or clauses that describe data collection, using quotes like “Cookies and Tracking Technologies.”
 Text:
 `,
+    withdrawConsent: `You are a privacy assistant. Please summarize the terms and conditions focusing on consent mechanisms and opt-out options. Explain clearly how users give consent, withdraw it, and what choices they have regarding data usage. Use plain English and avoid legal jargon.
+
+Organize the summary into the following sections. Use paragraph format without markdown.
+
+Overall Summary
+Summarize the company’s overall approach to obtaining user consent and giving users control over their data.
+
+Key Policies Explained
+Explain in more detail how users provide consent, how they can withdraw consent, and any available opt-out mechanisms (such as for marketing or data sharing). Mention whether consent is required for all data processing or only specific purposes.
+
+What Users Should Be Aware Of
+Discuss what impact these consent and opt-out policies have on users. For example, what happens if a user refuses or withdraws consent?
+
+Source References
+Clearly mention which sections were summarized, using phrases like “Section 3: User Consent” or “Opt-Out Rights.”
+
+Text:
+`,
 
     dataConfidentiality: `You are a privacy assistant. Please review and simplify the terms and conditions related to data confidentiality and security. Explain how user data is protected and whether the protections appear effective.
 Use the following section titles. Write in full paragraphs without bullet points or markdown formatting.

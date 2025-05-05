@@ -9,7 +9,9 @@ if (typeof window.keywordMap === 'undefined') {
         piSharing: ['share', 'disclose', 'third party', 'affiliate', 'distribute', 'transfer', 'communicate', 'send', 'forward', 'release', 'provide access', 'exchange', 'pass on', 'offer', 'publish', 'share with partners', 'make available'],
         dataConfidentiality: ['confidentiality', 'security', 'encrypt', 'protect', 'safe', 'privacy', 'secure', 'shield', 'restrict access', 'mask', 'guard', 'lock', 'safeguard', 'secure access', 'control access', 'prevent exposure', 'classify'],
         breachNotice: ['breach', 'unauthorized access', 'incident', 'notify', 'alert', 'inform', 'notify about breach', 'data leak', 'security breach', 'disclosure', 'notification', 'report', 'vulnerability', 'compromise', 'exposure', 'warning', 'fail to protect'],
-        summarizeWholePage: []
+        summarizeWholePage: [],
+        withdrawConsent: ['consent', 'opt-out', 'opt out', 'opt-in', 'opt in', 'unsubscribe', 'withdraw', 'reject', 'decline', 'refuse', 'manage preferences', 'change consent', 'adjust privacy', 'accept', 'deny']
+
     };
 }
 
@@ -38,38 +40,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-// function extractText(categories) {
-//   const url = window.location.href;
-//   if (url.endsWith('.pdf')) {
-//     return '__PDF_URL__:' + url;
-//   }
 
-//   if (categories.includes('custom')) {
-//     return document.body.innerText;
-//   } if (categories.includes('summarizeWholePage')) {
-//     return text;
-//   }
-
-
-//   let sections = [];
-//   const text = document.body.innerText;
-
-//   if (categories.includes('summarizeWholePage')) {
-//     return text;
-//   }
-
-//   categories.forEach(cat => {
-//     const keywords = window.keywordMap[cat] || []; // Access the global keywordMap
-//     document.querySelectorAll('p, div').forEach(el => {
-//       const lower = el.innerText.toLowerCase();
-//       if (keywords.some(k => lower.includes(k))) {
-//         sections.push(el.innerText);
-//       }
-//     });
-//   });
-
-//   return sections.join('\n').slice(0, 12000); // avoid overload
-// }
 
 function extractText(categories) {
     const url = window.location.href;
@@ -97,64 +68,7 @@ function extractText(categories) {
     return sections.join('\n').slice(0, 12000); // prevent overload
 }
 
-// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-//     if (message.type === 'scrollToSource') {
-//       const targetText = message.sourceText.trim().toLowerCase();
-//       const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, strong, b, th'));
-//       const allElements = Array.from(document.querySelectorAll('body *')); // to collect full section content
-  
-//       for (let i = 0; i < headings.length; i++) {
-//         const heading = headings[i];
-//         const headingText = heading.innerText.trim().toLowerCase();
-  
-//         if (
-//             headingText === targetText ||
-//             headingText.includes(targetText) ||
-//             targetText.includes(headingText)
-//           ) 
-//            {
-//           heading.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  
-//           // Highlight section content until the next heading of same or higher level
-//           const startIndex = allElements.indexOf(heading);
-//           let endIndex = allElements.length;
-//         //   const currentLevel = parseInt(heading.tagName.charAt(1));
-//         let currentLevel = 6; // default if not a heading
 
-//         if (/H[1-6]/.test(heading.tagName)) {
-//         currentLevel = parseInt(heading.tagName.charAt(1));
-//         }
-
-  
-//           for (let j = startIndex + 1; j < allElements.length; j++) {
-//             const tag = allElements[j].tagName;
-//             if (/H[1-6]/.test(tag) && parseInt(tag.charAt(1)) <= currentLevel) {
-//               endIndex = j;
-//               break;
-//             }
-//           }
-  
-//           for (let k = startIndex; k < endIndex; k++) {
-//             const el = allElements[k];
-//             el.style.backgroundColor = 'rgba(127, 90, 240, 0.15)';
-//             el.style.transition = 'background-color 0.5s ease';
-//           }
-  
-//           setTimeout(() => {
-//             for (let k = startIndex; k < endIndex; k++) {
-//               allElements[k].style.backgroundColor = '';
-//             }
-//           }, 3000);
-  
-//           sendResponse({ success: true });
-//           return true;
-//         }
-//       }
-  
-//       sendResponse({ success: false });
-//       return true;
-//     }
-//   });
 
 // In content.js, replace the scrollToSource handler with this improved version:
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

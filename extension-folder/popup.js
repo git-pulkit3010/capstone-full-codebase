@@ -337,9 +337,21 @@ themeToggle.addEventListener('change', () => {
       // Display summaries
       selected.forEach((cat, index) => {
         const label = categoryLabels[cat] || (cat === 'custom' ? 'Answer to Inquiry' : cat);
-        const full = res.summaries[cat] || 'No summary available for this section.';
-        const first = full.split(/[.?!]/)[0].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + (full.match(/[.?!]/) ? '' : '.');
+        let full = res.summaries[cat] || 'No summary available for this section.';
+        
+        full = full.replace(/Source:\s*([^\n]+)/g, (match, sourceText) => {
+          // Clean the source text to improve matching
+          const cleanSource = sourceText.trim()
+              .replace(/^["']+|["']+$/g, '') // Remove quotes
+              .replace(/\.$/, '') // Remove trailing period
+              .replace(/^section\s+/i, '') // Remove "Section" prefix
+              .replace(/\s+/g, ' ') // Normalize whitespace
+              .substring(0, 50); // Limit length to avoid matching too much// Remove trailing period
+              return `Source: <a href="#" class="source-link" data-source="${encodeURIComponent(cleanSource)}">${sourceText.trim()}</a>`;
+            });
 
+        const first = full.split(/[.?!]/)[0].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + (full.match(/[.?!]/) ? '' : '.');
+        
         const summaryBlock = document.createElement('div');
         summaryBlock.className = 'summary-block';
         summaryBlock.style.animationDelay = `${index * 0.1}s`;
@@ -372,6 +384,61 @@ themeToggle.addEventListener('change', () => {
         `;
         outputBox.appendChild(summaryBlock);
       });
+
+      // Add click handlers for source links - NEW SECTION
+      // Update the source link click handler in popup.js:
+document.querySelectorAll('.source-link').forEach(link => {
+  link.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const sourceText = decodeURIComponent(link.dataset.source);
+      
+      // Visual feedback
+      link.style.color = 'var(--accent-hover)';
+      link.style.fontWeight = '600';
+      
+      try {
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          
+          // First ensure content script is loaded
+          await chrome.scripting.executeScript({
+              target: { tabId: tab.id },
+              files: ['content.js']
+          });
+          
+          const response = await chrome.tabs.sendMessage(tab.id, {
+              type: 'scrollToSource',
+              sourceText: sourceText
+          });
+
+          if (!response || !response.success) {
+              throw new Error('Source not found');
+          }
+      } catch (err) {
+          console.error('Failed to locate source:', err);
+          link.style.color = 'var(--error-color)';
+          setTimeout(() => {
+              link.style.color = 'var(--accent-color)';
+              link.style.fontWeight = '';
+          }, 2000);
+          
+          // Show error tooltip
+          const errorTooltip = document.createElement('div');
+          errorTooltip.innerHTML = `
+              <div style="position: absolute;
+                          background: var(--error-color);
+                          color: white;
+                          padding: 4px 8px;
+                          border-radius: 4px;
+                          font-size: 12px;
+                          z-index: 1000;">
+                  Could not find exact source section
+              </div>
+          `;
+          link.appendChild(errorTooltip);
+          setTimeout(() => errorTooltip.remove(), 2000);
+      }
+  });
+});
 
       // Add duration
       const durationElement = document.createElement('div');

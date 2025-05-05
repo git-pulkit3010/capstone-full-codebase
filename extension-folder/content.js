@@ -156,34 +156,79 @@ function extractText(categories) {
 //     }
 //   });
 
-// content.js
-// content.js
+// In content.js, replace the scrollToSource handler with this improved version:
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'scrollToSource') {
-        const sourceText = message.sourceText;
+        const sourceText = message.sourceText.toLowerCase().trim();
         
-        // Try to find the element containing the source text
-        const elements = Array.from(document.querySelectorAll('*')).filter(el => {
-            return el.textContent.includes(sourceText);
-        });
+        // First try to find exact heading matches
+        const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+        const exactMatch = headings.find(h => 
+            h.textContent.toLowerCase().trim() === sourceText
+        );
         
-        if (elements.length > 0) {
-            // Scroll to the first matching element
-            elements[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Highlight it temporarily
-            const originalBg = elements[0].style.backgroundColor;
-            elements[0].style.backgroundColor = 'rgba(255, 255, 0, 0.3)';
-            setTimeout(() => {
-                elements[0].style.backgroundColor = originalBg;
-            }, 2000);
-            
+        if (exactMatch) {
+            highlightAndScroll(exactMatch);
             sendResponse({ success: true });
-        } else {
-            sendResponse({ success: false, error: 'Source not found' });
+            return true;
         }
+
+        // Then try partial matches in headings
+        const partialMatch = headings.find(h => 
+            h.textContent.toLowerCase().includes(sourceText) ||
+            sourceText.includes(h.textContent.toLowerCase())
+        );
+        
+        if (partialMatch) {
+            highlightAndScroll(partialMatch);
+            sendResponse({ success: true });
+            return true;
+        }
+
+        // Finally search all elements for the text
+        const allElements = Array.from(document.querySelectorAll('*'));
+        const elementMatch = allElements.find(el => {
+            const elText = el.textContent.toLowerCase().trim();
+            return elText === sourceText || 
+                   elText.includes(sourceText) || 
+                   sourceText.includes(elText);
+        });
+
+        if (elementMatch) {
+            highlightAndScroll(elementMatch);
+            sendResponse({ success: true });
+            return true;
+        }
+
+        sendResponse({ success: false, error: 'Source not found' });
+        return true;
     }
-    return true; // Required for async response
+
+    function highlightAndScroll(element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Highlight the element and its content until next heading
+        const originalBg = element.style.backgroundColor;
+        element.style.backgroundColor = 'rgba(127, 90, 240, 0.2)';
+        element.style.transition = 'background-color 0.3s ease';
+        
+        // Also highlight subsequent content until next heading
+        let nextElement = element.nextElementSibling;
+        while (nextElement && !/^h[1-6]$/i.test(nextElement.tagName)) {
+            nextElement.style.backgroundColor = 'rgba(127, 90, 240, 0.1)';
+            nextElement.style.transition = 'background-color 0.3s ease';
+            nextElement = nextElement.nextElementSibling;
+        }
+        
+        setTimeout(() => {
+            element.style.backgroundColor = originalBg;
+            nextElement = element.nextElementSibling;
+            while (nextElement && !/^h[1-6]$/i.test(nextElement.tagName)) {
+                nextElement.style.backgroundColor = '';
+                nextElement = nextElement.nextElementSibling;
+            }
+        }, 3000);
+    }
 });
   
   

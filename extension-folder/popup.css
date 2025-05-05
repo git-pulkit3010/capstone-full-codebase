@@ -546,9 +546,14 @@ body::-webkit-scrollbar-track {
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
+  position: relative;
 }
 
 .source-link:hover {
   color: var(--accent-hover);
   text-decoration: none;
+}
+
+.source-link:active {
+  transform: translateY(1px);
 }

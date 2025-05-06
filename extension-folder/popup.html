@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ConsentBuddy</title>
+  <link rel="stylesheet" href="popup.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+
+
+
+
+<div class="header">
+  <button id="backButton" style="display:none; background:none; border:none; color:var(--text-primary); font-size:16px; cursor:pointer;">←</button>
+  <h1>ConsentBuddy</h1>
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <span id="themeEmoji" style="font-size: 18px;">🌙</span>
+    <label class="toggle">
+      <input type="checkbox" id="themeToggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+</div>
+
+
+
+
+<body>
+  <div id="welcomeScreen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 600px; padding: 20px; text-align: center;">
+    <h1 style="font-size: 28px; color: var(--accent-color); margin-bottom: 12px;">ConsentBuddy</h1>
+    <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 20px;">Hi, how can I help you?</p>
+    <button id="startButton" style="padding: 10px 20px; font-size: 16px; border-radius: 8px; background-color: var(--accent-color); color: white; border: none; cursor: pointer;">
+      Get Started →
+    </button>
+  </div>
+
+
+
+
+
+
+  <!-- Categories Checkboxes -->
+  <div id="categoryContainer">
+    <form>
+      <label><input type="checkbox" id="summarizeWholePage"> Summarize Whole Page</label>
+      <label title="Summarizes how personal information is handled on the site.">
+        <input type="checkbox" id="piCollection"> Personal Data Collection
+      </label>
+      <label title="Summarizes how personal information is handled on the site.">
+        <input type="checkbox" id="piHandling"> Data Use/Handling
+      </label>
+      <label title="Summarizes how personal data is stored on the website.">
+        <input type="checkbox" id="piStorage"> Data Storage & Retention
+      </label>
+      <label title="Summarizes how personal information is shared with third parties.">
+        <input type="checkbox" id="piSharing"> Data Sharing & Third Parties
+      </label>
+      <label title="Summarizes the website's data confidentiality and security practices.">
+        <input type="checkbox" id="dataConfidentiality"> Data Security Measures
+      </label>
+      <label title="Summarizes the data breach notification practices.">
+        <input type="checkbox" id="breachNotice"> Data Breach Notification
+      </label>
+      <label title="Summarizes whether the user can refuse or withdraw your consent.">
+        <input type="checkbox" id="withdrawConsent"> Consent and Opt-out Options
+      </label>
+      <label title="Ask a custom privacy-related question.">
+        <input type="checkbox" id="customInquiry"> Custom Inquiry
+      </label>
+      <div id="customTextContainer" style="display:none;">
+        <input type="text" id="customTextInput" placeholder="e.g. How will this page use my data?"/>
+      </div>      
+    </form>
+    <button id="summarizeButton">
+      <span class="button-text">Summarize Selected</span>
+      <span class="button-icon">→</span>
+    </button>
+  </div>
+
+  <!-- Summarization Results and Progress -->
+  <div id="summaryContainer" style="display: none;">
+    <div id="summarizationMessage">
+      <div id="loadingText" class="loading-text">Analyzing page content...</div>
+      <div id="loadingBarContainer">
+        <div id="loadingBar"></div>
+      </div>
+      <div id="progressPercentLabel">
+        <span id="progressPercent">0%</span>
+      </div>
+    </div>    
+    <div id="summarizedTextContainer"></div>
+    <div class="button-group">
+      <button id="readButton" style="display: none;">
+        <span class="button-text">Read</span>
+      </button>
+      <button id="restartButton" style="display: none;">
+        <span class="button-text">Restart</span>
+      </button>
+    </div>
+    <button id="backButton" class="back-button" style="display: none;">
+      <span class="button-icon">←</span>
+      <span class="button-text">Back to Categories</span>
+    </button>
+    
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

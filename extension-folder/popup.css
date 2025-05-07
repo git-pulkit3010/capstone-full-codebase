@@ -1,18 +1,20 @@
 
 :root {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-tertiary: #2d2d2d;
-  --text-primary: #ffffff;
-  --text-secondary: #b3b3b3;
-  --accent-color: #7f5af0;
-  --accent-hover: #6c4bd1;
-  --success-color: #2cb67d;
-  --warning-color: #ff9e3b;
-  --error-color: #ff6b6b;
-  --border-color: #3d3d3d;
-  --progress-gradient: linear-gradient(90deg, #7f5af0, #b388ff);
+    --bg-primary: #1c1b1f; 
+    --bg-secondary: #25242a; 
+    --bg-tertiary: #2f2e35; 
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --accent-color: #d0bcff;
+    --accent-hover: #b69df8;
+    --button-text: #121212;
+    --success-color: #00e38c;
+    --warning-color: #f4b400;
+    --error-color: #ff6b6b;
+    --border-color: #3a3a3a;
+    --progress-gradient: linear-gradient(90deg, #d0bcff, #b69df8);
 }
+
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500&display=swap');
 
@@ -330,17 +332,20 @@ button {
 }
 
 body.light-mode {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f2f2f2;
-  --bg-tertiary: #e6e6e6;
-  --text-primary: #121212;
-  --text-secondary: #333333;
-  --accent-color: #4a60f0;
-  --accent-hover: #3c4fd1;
-  --success-color: #2aa56d;
-  --warning-color: #f5a623;
-  --error-color: #e53935;
-  --border-color: #d0d0d0;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3edf7;
+    --bg-tertiary: #e6e0e9;
+    --text-primary: #1c1b1f;
+    --text-secondary: #4a4458;
+    --accent-color: #6750a4;
+    --accent-hover: #4f378b;
+    --button-text: #ffffff; 
+
+    --success-color: #00a37a;
+    --warning-color: #f9ab00;
+    --error-color: #b3261e;
+    --border-color: #cac4d0;
+    --progress-gradient: linear-gradient(90deg, #6750a4, #d0bcff);
 }
 
 .header {
@@ -556,4 +561,19 @@ body::-webkit-scrollbar-track {
 
 .source-link:active {
   transform: translateY(1px);
+}
+
+
+
+
+#readButton,
+#restartButton,
+#summarizeButton,
+.button-group button {
+    color: var(--button-text, white); /* use fallback if not defined */
+}
+
+
+body:not(.light-mode) h1 {
+    color: #ffffff !important;
 }

@@ -1,0 +1,83 @@
+📊 DATABASE PERFORMANCE TEST RESULTS
+
+🚀 Starting performance test...
+
+🔌 Test 1: Connection Time
+  ↳ Iteration 1: 1315.72ms
+  ↳ Iteration 2: 0.57ms
+  ↳ Iteration 3: 0.13ms
+  ↳ Iteration 4: 0.08ms
+  ↳ Iteration 5: 0.09ms
+  ↳ Iteration 6: 0.14ms
+  ↳ Iteration 7: 0.25ms
+  ↳ Iteration 8: 0.09ms
+  ↳ Iteration 9: 0.31ms
+  ↳ Iteration 10: 0.18ms
+  ↳ Iteration 11: 0.11ms
+  ↳ Iteration 12: 0.09ms
+  ↳ Iteration 13: 0.09ms
+  ↳ Iteration 14: 0.11ms
+  ↳ Iteration 15: 0.08ms
+  ↳ Iteration 16: 0.07ms
+  ↳ Iteration 17: 0.07ms
+  ↳ Iteration 18: 0.07ms
+  ↳ Iteration 19: 0.08ms
+  ↳ Iteration 20: 0.09ms
+  📈 Average: 65.92ms
+
+✍️ Test 2: Insert Performance
+  ↳ Insert 1: 275.55ms
+  ↳ Insert 2: 271.49ms
+  ↳ Insert 3: 272.60ms
+  ↳ Insert 4: 278.06ms
+  ↳ Insert 5: 273.28ms
+  ↳ Insert 6: 288.43ms
+  ↳ Insert 7: 274.70ms
+  ↳ Insert 8: 274.47ms
+  ↳ Insert 9: 273.84ms
+  ↳ Insert 10: 274.89ms
+  ↳ Insert 11: 272.99ms
+  ↳ Insert 12: 271.45ms
+  ↳ Insert 13: 272.57ms
+  ↳ Insert 14: 273.37ms
+  ↳ Insert 15: 271.58ms
+  ↳ Insert 16: 272.49ms
+  ↳ Insert 17: 273.27ms
+  ↳ Insert 18: 272.44ms
+  ↳ Insert 19: 271.12ms
+  ↳ Insert 20: 276.92ms
+  📈 Average: 274.28ms
+
+🔎 Test 3: Select Performance
+  ↳ Select 1: 274.66ms
+  ↳ Select 2: 270.90ms
+  ↳ Select 3: 271.43ms
+  ↳ Select 4: 272.77ms
+  ↳ Select 5: 272.64ms
+  ↳ Select 6: 272.89ms
+  ↳ Select 7: 271.80ms
+  ↳ Select 8: 274.10ms
+  ↳ Select 9: 272.54ms
+  ↳ Select 10: 271.37ms
+  ↳ Select 11: 271.83ms
+  ↳ Select 12: 271.35ms
+  ↳ Select 13: 272.62ms
+  ↳ Select 14: 272.02ms
+  ↳ Select 15: 278.56ms
+  ↳ Select 16: 272.52ms
+  ↳ Select 17: 272.83ms
+  ↳ Select 18: 272.48ms
+  ↳ Select 19: 275.10ms
+  ↳ Select 20: 272.78ms
+  📈 Average: 272.86ms
+
+🧹 Cleaning up test data...
+  ✅ Deleted 20 rows
+
+🎯 TEST COMPLETE
+
+📊 FINAL SUMMARY
+---------------------
+Average Connection Time: 65.92ms
+Average Insert Time:     274.28ms
+Average Select Time:     272.86ms
